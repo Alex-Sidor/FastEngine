@@ -15,3 +15,6 @@ For Visual Studio:
 For Make file on windows:
 ```cmake -B build -S . -G "MinGW Makefiles"```
 ```cmake --build build```
+```.\build\FastEngine.exe```
+* For quick rebuilds:
+```cmake --build build;.\build\FastEngine.exe```

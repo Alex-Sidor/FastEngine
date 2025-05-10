@@ -5,24 +5,30 @@
 #include <cmath>
 #include <iostream>
 
+#define WINDOW_WIDTH 1000
+#define WINDOW_HEIGHT 1000
+
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
+constexpr int amountOfPixels = WINDOW_WIDTH*WINDOW_HEIGHT;
 
-double a = 0;
+Uint32 pixelBuffer[amountOfPixels];
 
-Uint32 pixelBuffer[WINDOW_WIDTH*WINDOW_HEIGHT];
+constexpr int largestSize =  WINDOW_HEIGHT; //WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_WIDTH : WINDOW_HEIGHT;
 
-static void placePoint(Uint32* pixels,int x, int y) {
+int triangleBuffer[2 * largestSize];
+
+double a;
+
+static void placePoint(int x, int y) {
     int p = x + WINDOW_WIDTH * y;
     //Uint8 firstByte = (colour >> 24) & 0xFF;
-    pixels[p] = 0xFFFFFFFF;
+    pixelBuffer[p] = 0xFFFFFFFF;
 }
 
-static void DrawLine(Uint32* pixels, float x1, float y1, float x2, float y2)
+static void DrawLine(float x1, float y1, float x2, float y2)
 {
     float division;
     float biggest;
@@ -40,19 +46,35 @@ static void DrawLine(Uint32* pixels, float x1, float y1, float x2, float y2)
         int y = static_cast<int>(std::round(((y2 - y1) * (a / biggest)) + y1 + (WINDOW_HEIGHT / 2)));
 
         if (x >= 0 && x < WINDOW_WIDTH && y >= 0 && y < WINDOW_HEIGHT) {
-            placePoint(pixels, x, y);
+
+            if(triangleBuffer[y] == -1 || x < triangleBuffer[y]){
+                triangleBuffer[y] = x;
+            }
+            if(triangleBuffer[y + largestSize] == -1 || x > triangleBuffer[y + largestSize]){
+                triangleBuffer[y + largestSize] = x;
+            }
         }
     }
 
 }
 
-static void trongle(Uint32* pixels, float x1, float y1, float x2, float y2, float x3, float y3) {
+static void triangle(float x1, float y1, float x2, float y2, float x3, float y3) {
 
+    SDL_memset(triangleBuffer, -1, sizeof(int)*largestSize*2);
     
-    DrawLine(pixels, x1,y1,x2,y2);
-    DrawLine(pixels, x2, y2, x3, y3);
-    DrawLine(pixels, x3, y3, x1, y1);
+    DrawLine(x1,y1,x2,y2);
+    DrawLine(x2, y2, x3, y3);
+    DrawLine(x3, y3, x1, y1);
 
+    for (int y = 0; y < largestSize; y++)
+    {
+        if(triangleBuffer[y] != -1 && triangleBuffer[y + largestSize] != -1){
+            for (int x = 0; x < (triangleBuffer[y + largestSize] - triangleBuffer[y]); x++)
+            {
+                placePoint(x+triangleBuffer[y],y);
+            }
+        }
+    } 
 }
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -80,20 +102,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
+    SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
 
-    for (int i = 0; i < (WINDOW_WIDTH * WINDOW_HEIGHT);i++) {
-        pixelBuffer[i] = 0x000000FF;
-    }
-
-    trongle(&pixelBuffer[0], sin(a)*200, cos(a) * 200, sin(a + 2.1) * 200, cos(a + 2.1) * 200, sin(a + 4.2) * 200, cos(a + 4.2) * 200);
+    triangle(sin(a)*200, cos(a) * 200, sin(a + 2.1) * 200, cos(a + 2.1) * 200, sin(a + 4.2) * 200, cos(a + 4.2) * 200);
     a+= 0.001;
 
-
     SDL_UpdateTexture(texture, NULL, pixelBuffer,WINDOW_WIDTH*sizeof(Uint32));
-
-    //SDL_FRect dst_rect = { 0, 0, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT };
     
-    SDL_RenderTexture(renderer, texture, NULL, NULL);// &dst_rect);
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
 
     SDL_RenderPresent(renderer);
 
