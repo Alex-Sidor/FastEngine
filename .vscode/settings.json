@@ -77,6 +77,11 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "backup": "cpp"
+        "backup": "cpp",
+        "memory_resource": "cpp",
+        "string_view": "cpp",
+        "ranges": "cpp",
+        "text_encoding": "cpp",
+        "cinttypes": "cpp"
     }
 }
