@@ -33,11 +33,19 @@ public:
         pixelBuffer = new Uint32[amountOfPixels];   
         triangleBuffer = new Uint32[bufferSize];
     
-        if (!SDL_CreateWindowAndRenderer("FastEngine", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+        window = SDL_CreateWindow("FastEngine", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+        if (!window) {
             isError = true;
-            error = "Couldn't create Window and Renderer: ";
+            error = "Couldn't create Window: ";
             error += SDL_GetError();
-            error += "\n";
+            return;
+        }
+
+        renderer = SDL_CreateRenderer(window, nullptr);
+        if (!renderer) {
+            isError = true;
+            error = "Couldn't create Renderer: ";
+            error += SDL_GetError();
             return;
         }
 
@@ -66,13 +74,14 @@ public:
     }
 
     void renderBuffer(){
-        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
+        //SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
         
-        for (int i = 0; i < 10000; i++)
+        for (int x = 0; x < WINDOW_WIDTH; x++)
         {
-            triangle(rand() % 1001 - 500, rand() % 1001 - 500,
-                     rand() % 1001 - 500, rand() % 1001 - 500,
-                     rand() % 1001 - 500, rand() % 1001 - 500);
+            for (int y = 0; y < WINDOW_HEIGHT; y++)
+            {
+                triangle(x,y,x+5,y,x,y+5);
+            }
         }
 
         SDL_UpdateTexture(texture, NULL, pixelBuffer,WINDOW_WIDTH*4);
@@ -95,13 +104,14 @@ private:
     int largestSize;
     int bufferSize;
 
-    void placePoint(int p) {
-        if (p >= 0 && p < amountOfPixels) {
-            pixelBuffer[p] = 0xFFFFFFFF;
-        }
+    int minY = 0;
+    int maxY = 0;
+
+    inline void placePoint(int p) {
+        pixelBuffer[p] = 0xFFFFFFFF;
     }
 
-    void minMaxPlot(int x0, int y0) {
+    inline void minMaxPlot(int x0, int y0) {
         if (x0 >= 0 && x0 < WINDOW_WIDTH && y0 >= 0 && y0 < WINDOW_HEIGHT) {
             int yMax = y0 + largestSize;
             if (triangleBuffer[y0] == -1) {
@@ -110,13 +120,15 @@ private:
             } else {
                 if (x0 < triangleBuffer[y0])
                     triangleBuffer[y0] = x0;
-                if (x0 > triangleBuffer[yMax])
-                    triangleBuffer[yMax] = x0;
+                else {
+                    if (x0 > triangleBuffer[yMax])
+                        triangleBuffer[yMax] = x0;
+                }
             }
         }
     }
 
-    void drawLine(int x0, int y0, int x1, int y1) {
+    inline void drawLine(int x0, int y0, int x1, int y1) {
         bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
 
         if (steep) {
@@ -140,7 +152,6 @@ private:
                 minMaxPlot(y, x);
             else
                 minMaxPlot(x, y);
-
             error -= dy;
             if (error < 0) {
                 y += ystep;
@@ -149,33 +160,25 @@ private:
         }
     }
 
-    void triangle(int x1, int y1, int x2, int y2, int x3, int y3) {
-        int ix1 = x1 + halfWidth;
-        int iy1 = y1 + halfHeight;
-        int ix2 = x2 + halfWidth;
-        int iy2 = y2 + halfHeight;
-        int ix3 = x3 + halfWidth;
-        int iy3 = y3 + halfHeight;
+    inline void triangle(int x1, int y1, int x2, int y2, int x3, int y3) { 
+        for (int y = minY; y < maxY; ++y)
+            triangleBuffer[y] = 0xFFFFFFFF;
+        
+        minY = std::min(std::min(y1,y2),y3);
+        maxY = std::min(std::max(y1,y2),y3) + 1;
 
-        int minY = std::min({iy1, iy2, iy3});
-        int maxY = std::max({iy1, iy2, iy3}) + 1;
+        if(minY < 0) minY = 0;
+        if(maxY > largestSize) maxY = largestSize;
 
-        for (int i = minY; i < maxY; i++) {
-            triangleBuffer[i] = -1;
-            triangleBuffer[i + largestSize] = -1;
-        }
-
-        drawLine(ix1, iy1, ix2, iy2);
-        drawLine(ix2, iy2, ix3, iy3);
-        drawLine(ix3, iy3, ix1, iy1);
+        drawLine(x1, y1, x2, y2);
+        drawLine(x2, y2, x3, y3);
+        drawLine(x3, y3, x1, y1);
 
         int p = WINDOW_WIDTH * minY;
 
         for (int y = minY; y < maxY; y++) {
-            if (triangleBuffer[y] != -1) {
-                for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize]; x++) {
-                    placePoint(p + x);
-                }
+            for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize]; x++) {
+                placePoint(p + x);
             }
             p += WINDOW_WIDTH;
         }
