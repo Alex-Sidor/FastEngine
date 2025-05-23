@@ -1,6 +1,5 @@
-#define SDL_MAIN_USE_CALLBACKS 1
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
+#include "screen.h"
+
 #include <stdlib.h>
 #include <cmath>
 #include <iostream>
@@ -16,9 +15,6 @@ public:
 
     Uint32* pixelBuffer;
 
-    bool isError = false;
-    std::string error;
-
     Camera(int width, int height){
         WINDOW_WIDTH = width;
         WINDOW_HEIGHT = height;
@@ -32,49 +28,15 @@ public:
 
         pixelBuffer = new Uint32[amountOfPixels];   
         triangleBuffer = new Uint32[bufferSize];
-    
-        window = SDL_CreateWindow("FastEngine", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
-        if (!window) {
-            isError = true;
-            error = "Couldn't create Window: ";
-            error += SDL_GetError();
-            return;
-        }
-
-        renderer = SDL_CreateRenderer(window, nullptr);
-        if (!renderer) {
-            isError = true;
-            error = "Couldn't create Renderer: ";
-            error += SDL_GetError();
-            return;
-        }
-
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
-        if (!texture) {
-            isError = true;
-            error = "Couldn't create Texture: ";
-            error += SDL_GetError();
-            error += "\n";
-        }
     }
 
     ~Camera(){
         delete[] pixelBuffer;
         delete[] triangleBuffer;
-
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-    }
-
-    void checkForError(){
-        if (isError) {
-            SDL_Log("Camera Error: %s", error.c_str());
-        }
     }
 
     void renderBuffer(){
-        //SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
+        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
         
         for (int x = 0; x < WINDOW_WIDTH; x++)
         {
@@ -84,18 +46,9 @@ public:
             }
         }
 
-        SDL_UpdateTexture(texture, NULL, pixelBuffer,WINDOW_WIDTH*4);
-
-        SDL_RenderTexture(renderer, texture, NULL, NULL);
-
-        SDL_RenderPresent(renderer);
     }
 
 private:
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
-    SDL_Texture* texture = nullptr;
-
     Uint32* triangleBuffer;
 
     int halfWidth;
@@ -148,6 +101,12 @@ private:
         int y = y0;
 
         for (int x = x0; x <= x1; ++x) {
+            int ia = static_cast<Uint32>(x/(x1 - x0));
+            int ib = static_cast<Uint32>(x/(x1 - x0));
+            int ic = static_cast<Uint32>(x/(x1 - x0));
+
+            //Uint32 Colour = 
+
             if (steep)
                 minMaxPlot(y, x);
             else
@@ -186,44 +145,33 @@ private:
 };
 
 Camera* camera = nullptr;
+Screen* screen = nullptr;
 
-SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
-{
-    if(!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
+int main(int argc, char* argv[]) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_Log("Failed to init SDL: %s", SDL_GetError());
+        return 1;
     }
 
-    camera = new Camera(1000, 1000);
-    camera->checkForError();
+    Screen screen(1000, 1000);
+    Camera camera(1000, 1000);
 
-    return SDL_APP_CONTINUE;
-}
+    bool running = true;
+    SDL_Event event;
 
-SDL_AppResult SDL_AppIterate(void* appstate)
-{
-    auto start = std::chrono::high_resolution_clock::now();
+    while (running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT)
+                running = false;
+        }
 
-    camera->renderBuffer();
+        auto start = std::chrono::high_resolution_clock::now();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    SDL_Log("Frame Rendered in %lld µs", duration.count());
+        camera.renderBuffer();
+        screen.displayBuffer(camera.pixelBuffer);
 
-    return SDL_APP_CONTINUE;
-}
-
-void SDL_AppQuit(void* appstate, SDL_AppResult result)
-{
-    delete camera;
-    SDL_Quit();
-}
-
-SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
-{
-    if (event->type == SDL_EVENT_QUIT) {
-        return SDL_APP_SUCCESS;
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        SDL_Log("Frame Rendered in %lld µs", duration.count());
     }
-
-    return SDL_APP_CONTINUE;
 }
