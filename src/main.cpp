@@ -1,19 +1,17 @@
 #include "screen.h"
 
-#include <stdlib.h>
-#include <cmath>
 #include <iostream>
 #include <algorithm>
-#include <string>
-
 #include <chrono>
+#include <cmath>
 
 class Camera {
 public:
-    int WINDOW_WIDTH;
-    int WINDOW_HEIGHT;
+    int WINDOW_WIDTH,WINDOW_HEIGHT;
 
     Uint32* pixelBuffer;
+
+    float angle;
 
     Camera(int width, int height){
         WINDOW_WIDTH = width;
@@ -27,7 +25,12 @@ public:
         bufferSize = largestSize * 2;
 
         pixelBuffer = new Uint32[amountOfPixels];   
-        triangleBuffer = new Uint32[bufferSize];
+        triangleBuffer = new int[bufferSize];
+
+        angle = 0;
+
+        memset(triangleBuffer, -1, bufferSize*sizeof(int));
+        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
     }
 
     ~Camera(){
@@ -37,7 +40,7 @@ public:
 
     void renderBuffer(){
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
-        
+
         for (int x = 0; x < WINDOW_WIDTH; x++)
         {
             for (int y = 0; y < WINDOW_HEIGHT; y++)
@@ -45,11 +48,12 @@ public:
                 triangle(x,y,x+5,y,x,y+5);
             }
         }
-
+        
+        //angle += 0.001;
     }
 
 private:
-    Uint32* triangleBuffer;
+    int* triangleBuffer;
 
     int halfWidth;
     int halfHeight;
@@ -57,95 +61,94 @@ private:
     int largestSize;
     int bufferSize;
 
-    int minY = 0;
-    int maxY = 0;
-
-    inline void placePoint(int p) {
-        pixelBuffer[p] = 0xFFFFFFFF;
+    void placePoint(int p) {
+        if (p >= 0 && p < amountOfPixels)
+            pixelBuffer[p] = 0xFFFFFFFF;
     }
 
-    inline void minMaxPlot(int x0, int y0) {
-        if (x0 >= 0 && x0 < WINDOW_WIDTH && y0 >= 0 && y0 < WINDOW_HEIGHT) {
-            int yMax = y0 + largestSize;
-            if (triangleBuffer[y0] == -1) {
-                triangleBuffer[y0] = x0;
-                triangleBuffer[yMax] = x0;
-            } else {
-                if (x0 < triangleBuffer[y0])
-                    triangleBuffer[y0] = x0;
-                else {
-                    if (x0 > triangleBuffer[yMax])
-                        triangleBuffer[yMax] = x0;
-                }
-            }
-        }
-    }
-
-    inline void drawLine(int x0, int y0, int x1, int y1) {
-        bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
-
-        if (steep) {
-            std::swap(x0, y0);
-            std::swap(x1, y1);
-        }
-
-        if (x0 > x1) {
-            std::swap(x0, x1);
-            std::swap(y0, y1);
-        }
-
-        int dx = x1 - x0;
-        int dy = std::abs(y1 - y0);
-        int error = dx / 2;
-        int ystep = (y0 < y1) ? 1 : -1;
-        int y = y0;
-
-        for (int x = x0; x <= x1; ++x) {
-            int ia = static_cast<Uint32>(x/(x1 - x0));
-            int ib = static_cast<Uint32>(x/(x1 - x0));
-            int ic = static_cast<Uint32>(x/(x1 - x0));
-
-            //Uint32 Colour = 
-
-            if (steep)
-                minMaxPlot(y, x);
-            else
-                minMaxPlot(x, y);
-            error -= dy;
-            if (error < 0) {
-                y += ystep;
-                error += dx;
-            }
-        }
-    }
-
-    inline void triangle(int x1, int y1, int x2, int y2, int x3, int y3) { 
-        for (int y = minY; y < maxY; ++y)
-            triangleBuffer[y] = 0xFFFFFFFF;
+    void minMaxPlot(int x0, int y0) {
+        if (x0 < 0 || x0 > WINDOW_WIDTH -1 || y0 < 0 || y0 > WINDOW_HEIGHT-1) return;
         
-        minY = std::min(std::min(y1,y2),y3);
-        maxY = std::min(std::max(y1,y2),y3) + 1;
+        if (triangleBuffer[y0] == -1) {
+            triangleBuffer[y0] = x0;
+            triangleBuffer[y0 + largestSize] = x0;
+        } else {
+            if (x0 < triangleBuffer[y0])
+                triangleBuffer[y0] = x0;
+            else {
+                if (x0 > triangleBuffer[y0 + largestSize])
+                    triangleBuffer[y0 + largestSize] = x0;
+            }
+        }
+    }
+
+    void drawLine(float x0, float y0, float x1, float y1) {
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+
+        float slope = dx/dy;
+
+        int start = static_cast<int>(SDL_roundf(y0));
+        int end = static_cast<int>(SDL_roundf(y1));
+
+        if(start>end){
+            std::swap(start,end);
+            std::swap(x0,x1);
+        }
+        //float x = x0;
+        for (int y = start; y < end; y++)
+        {
+            minMaxPlot(static_cast<int>(x0),y);
+            x0 += slope;
+        }
+    }
+
+    void triangle(float x1, float y1, float x2, float y2, float x3, float y3) { 
+        int minY, maxY;
+
+        if (y1 > y2) {
+            if (y1 > y3) maxY = y1;
+            else maxY = y3;
+
+            if (y2 < y3) minY = y2;
+            else minY = y3;
+        } else {
+            if (y2 > y3) maxY = y2;
+            else maxY = y3;
+
+            if (y1 < y3) minY = y1;
+            else minY = y3;
+        }
+
+        
+        minY = static_cast<int>(roundf(minY));
+        maxY = static_cast<int>(roundf(maxY));
 
         if(minY < 0) minY = 0;
-        if(maxY > largestSize) maxY = largestSize;
+        if(maxY > largestSize -1) maxY = largestSize;
 
         drawLine(x1, y1, x2, y2);
         drawLine(x2, y2, x3, y3);
         drawLine(x3, y3, x1, y1);
 
         int p = WINDOW_WIDTH * minY;
-
         for (int y = minY; y < maxY; y++) {
-            for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize]; x++) {
+            for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize] + 1; x++) {
                 placePoint(p + x);
             }
+            triangleBuffer[y] = -1;
+            triangleBuffer[y+largestSize] = -1;
             p += WINDOW_WIDTH;
         }
+
+        /*for (int i = 0; i < bufferSize; i++)
+        {
+            if(triangleBuffer[i] != -1){
+                std::cout << i << "uncleaned buffer position\n";
+            }
+        }*/
     }
 };
-
-Camera* camera = nullptr;
-Screen* screen = nullptr;
 
 int main(int argc, char* argv[]) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -155,6 +158,8 @@ int main(int argc, char* argv[]) {
 
     Screen screen(1000, 1000);
     Camera camera(1000, 1000);
+
+    std::cout << screen.error << "\n";
 
     bool running = true;
     SDL_Event event;
@@ -172,6 +177,7 @@ int main(int argc, char* argv[]) {
 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        SDL_Log("Frame Rendered in %lld µs", duration.count());
+        SDL_Log("Frame Rendered in %lld triangles per second", 1000000000000/duration.count());
     }
+    SDL_Quit();
 }

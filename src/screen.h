@@ -9,14 +9,13 @@ public:
     Screen(int x, int y);
     void displayBuffer(Uint32* buffer);
 
+    std::string error;
+
 private:
     int width;
-    bool isError = false;
-    std::string error;
 
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* texture = nullptr;
 };
-
 #endif
