@@ -82,6 +82,7 @@
         "string_view": "cpp",
         "ranges": "cpp",
         "text_encoding": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "cfenv": "cpp"
     }
 }

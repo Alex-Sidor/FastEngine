@@ -5,13 +5,39 @@
 #include <chrono>
 #include <cmath>
 
+struct vec2
+{
+    float x;
+    float y;
+    
+    vec2(float X, float Y){
+        x = X;
+        y = Y;
+    }
+};
+
+struct colour
+{
+    float r;
+    float g;
+    float b;
+    
+    colour() : r(0), g(0), b(0) {}
+
+    colour(float R, float G, float B){
+        r = R;
+        g = G;
+        b = B;
+    }
+};
+
 class Camera {
 public:
     int WINDOW_WIDTH,WINDOW_HEIGHT;
 
     Uint32* pixelBuffer;
 
-    float angle;
+    float angle = 0;
 
     Camera(int width, int height){
         WINDOW_WIDTH = width;
@@ -25,12 +51,12 @@ public:
         bufferSize = largestSize * 2;
 
         pixelBuffer = new Uint32[amountOfPixels];   
-        triangleBuffer = new int[bufferSize];
-
-        angle = 0;
-
-        memset(triangleBuffer, -1, bufferSize*sizeof(int));
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
+        
+        triangleBuffer = new int[bufferSize];
+        memset(triangleBuffer, -1, bufferSize*sizeof(int));
+        
+        triangleColours = new colour[bufferSize]; 
     }
 
     ~Camera(){
@@ -41,19 +67,38 @@ public:
     void renderBuffer(){
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
 
-        for (int x = 0; x < WINDOW_WIDTH; x++)
-        {
-            for (int y = 0; y < WINDOW_HEIGHT; y++)
-            {
-                triangle(x,y,x+5,y,x,y+5);
-            }
-        }
-        
-        //angle += 0.001;
+        float r = 200.0f;
+        float cx = WINDOW_WIDTH/2;
+        float cy = WINDOW_HEIGHT/2;
+
+        vec2 p0(
+            cx + SDL_cosf(angle) * r,
+            cy + SDL_sinf(angle) * r
+        );
+
+        vec2 p1(
+            cx + SDL_cosf(angle + 2.094f) * r,
+            cy + SDL_sinf(angle + 2.094f) * r
+        );
+
+        vec2 p2(
+            cx + SDL_cosf(angle + 4.188f) * r,
+            cy + SDL_sinf(angle + 4.188f) * r
+        );
+
+        colour c0 = colour(255, 0, 0);
+        colour c1 = colour(0, 255, 0);
+        colour c2 = colour(0, 0, 255);
+
+        triangle(p0, p1,p2, c0, c1, c2);
+
+        // Animate rotation
+        angle += 0.01f;
     }
 
 private:
     int* triangleBuffer;
+    colour* triangleColours;
 
     int halfWidth;
     int halfHeight;
@@ -61,65 +106,85 @@ private:
     int largestSize;
     int bufferSize;
 
-    void placePoint(int p) {
+    void placePoint(int p,colour c0) {
         if (p >= 0 && p < amountOfPixels)
-            pixelBuffer[p] = 0xFFFFFFFF;
+            pixelBuffer[p] = (static_cast<Uint8>(c0.r) << 24) + (static_cast<Uint8>(c0.g) << 16) + (static_cast<Uint8>(c0.b) << 8) + 255;
     }
 
-    void minMaxPlot(int x0, int y0) {
+    void minMaxPlot(int x0, int y0,colour c0) {
         if (x0 < 0 || x0 > WINDOW_WIDTH -1 || y0 < 0 || y0 > WINDOW_HEIGHT-1) return;
         
         if (triangleBuffer[y0] == -1) {
             triangleBuffer[y0] = x0;
             triangleBuffer[y0 + largestSize] = x0;
+            
+            triangleColours[y0] = c0;
+            triangleColours[y0 + largestSize] = c0;
+
         } else {
-            if (x0 < triangleBuffer[y0])
+            if (x0 < triangleBuffer[y0]){
                 triangleBuffer[y0] = x0;
-            else {
-                if (x0 > triangleBuffer[y0 + largestSize])
-                    triangleBuffer[y0 + largestSize] = x0;
+                triangleColours[y0] = c0;
             }
+            else {
+                if (x0 > triangleBuffer[y0 + largestSize]){
+                    triangleBuffer[y0 + largestSize] = x0;
+                    triangleColours[y0 + largestSize] = c0;
+                }
+            }   
         }
     }
 
-    void drawLine(float x0, float y0, float x1, float y1) {
-        float dx = x1 - x0;
-        float dy = y1 - y0;
+    void drawLine(vec2 p0, vec2 p1, colour c0, colour c1) {
+        float dx = p1.x - p0.x;
+        float dy = p1.y - p0.y;
 
         float slope = dx/dy;
 
-        int start = static_cast<int>(SDL_roundf(y0));
-        int end = static_cast<int>(SDL_roundf(y1));
+        int start = static_cast<int>(SDL_roundf(p0.y));
+        int end = static_cast<int>(SDL_roundf(p1.y));
+
+        float slopeR = (c1.r - c0.r)/dy;
+
+        float slopeG = (c1.g - c0.g)/dy;
+
+        float slopeB = (c1.b - c0.b)/dy;
 
         if(start>end){
             std::swap(start,end);
-            std::swap(x0,x1);
+            std::swap(p0.x,p1.x);
+            std::swap(c0.r,c1.r);
+            std::swap(c0.g,c1.g);
+            std::swap(c0.b,c1.b);
         }
-        //float x = x0;
+
         for (int y = start; y < end; y++)
         {
-            minMaxPlot(static_cast<int>(x0),y);
-            x0 += slope;
+            minMaxPlot(static_cast<int>(p0.x),y,c0);
+            p0.x += slope;
+           
+            c0.r += slopeR;
+            c0.g += slopeG;
+            c0.b += slopeB;
         }
     }
 
-    void triangle(float x1, float y1, float x2, float y2, float x3, float y3) { 
+    void triangle(vec2 p0, vec2 p1, vec2 p2, colour c0, colour c1, colour c2) { 
         int minY, maxY;
 
-        if (y1 > y2) {
-            if (y1 > y3) maxY = y1;
-            else maxY = y3;
+        if (p0.y > p1.y) {
+            if (p0.y > p2.y) maxY = p0.y;
+            else maxY = p2.y;
 
-            if (y2 < y3) minY = y2;
-            else minY = y3;
+            if (p1.y < p2.y) minY = p1.y;
+            else minY = p2.y;
         } else {
-            if (y2 > y3) maxY = y2;
-            else maxY = y3;
+            if (p1.y > p2.y) maxY = p1.y;
+            else maxY = p2.y;
 
-            if (y1 < y3) minY = y1;
-            else minY = y3;
+            if (p0.y < p2.y) minY = p0.y;
+            else minY = p2.y;
         }
-
         
         minY = static_cast<int>(roundf(minY));
         maxY = static_cast<int>(roundf(maxY));
@@ -127,15 +192,30 @@ private:
         if(minY < 0) minY = 0;
         if(maxY > largestSize -1) maxY = largestSize;
 
-        drawLine(x1, y1, x2, y2);
-        drawLine(x2, y2, x3, y3);
-        drawLine(x3, y3, x1, y1);
+        drawLine(p0,p1,c0,c1);
+        drawLine(p1,p2,c1,c2);
+        drawLine(p2,p0,c2,c0);
 
         int p = WINDOW_WIDTH * minY;
         for (int y = minY; y < maxY; y++) {
+            float dx = triangleBuffer[y + largestSize]-triangleBuffer[y];
+            
+            colour currentColour = triangleColours[y];
+            
+            float slopeR = (triangleColours[y + largestSize].r - triangleColours[y].r)/dx;
+
+            float slopeG = (triangleColours[y + largestSize].g - triangleColours[y].g)/dx;
+
+            float slopeB = (triangleColours[y + largestSize].b - triangleColours[y].b)/dx;
+            
             for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize] + 1; x++) {
-                placePoint(p + x);
+                placePoint(p + x, currentColour);
+                
+                currentColour.r += slopeR;
+                currentColour.g += slopeG;
+                currentColour.b += slopeB;
             }
+            
             triangleBuffer[y] = -1;
             triangleBuffer[y+largestSize] = -1;
             p += WINDOW_WIDTH;
@@ -173,11 +253,11 @@ int main(int argc, char* argv[]) {
         auto start = std::chrono::high_resolution_clock::now();
 
         camera.renderBuffer();
-        screen.displayBuffer(camera.pixelBuffer);
 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        SDL_Log("Frame Rendered in %lld triangles per second", 1000000000000/duration.count());
+        SDL_Log("Frame Rendered in %lld triangles per second", 1000000/duration.count());
+        screen.displayBuffer(camera.pixelBuffer);
     }
     SDL_Quit();
 }
