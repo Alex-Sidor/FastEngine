@@ -92,8 +92,7 @@ public:
 
         triangle(p0, p1,p2, c0, c1, c2);
 
-        // Animate rotation
-        angle += 0.01f;
+        angle += 0.001f;
     }
 
 private:
@@ -107,8 +106,7 @@ private:
     int bufferSize;
 
     void placePoint(int p,colour c0) {
-        if (p >= 0 && p < amountOfPixels)
-            pixelBuffer[p] = (static_cast<Uint8>(c0.r) << 24) + (static_cast<Uint8>(c0.g) << 16) + (static_cast<Uint8>(c0.b) << 8) + 255;
+        pixelBuffer[p] = (static_cast<Uint8>(c0.r) << 24) + (static_cast<Uint8>(c0.g) << 16) + (static_cast<Uint8>(c0.b) << 8) + 255;
     }
 
     void minMaxPlot(int x0, int y0,colour c0) {
@@ -152,10 +150,22 @@ private:
 
         if(start>end){
             std::swap(start,end);
-            std::swap(p0.x,p1.x);
-            std::swap(c0.r,c1.r);
-            std::swap(c0.g,c1.g);
-            std::swap(c0.b,c1.b);
+            
+            float temp = p0.x;
+            p0.x = p1.x;
+            p1.x = temp;
+
+            temp = c0.r;
+            c0.r = c1.r;
+            c1.r = temp;
+
+            temp = c0.g;
+            c0.g = c1.g;
+            c1.g = temp;
+
+            temp = c0.b;
+            c0.b = c1.b;
+            c1.b = temp;
         }
 
         for (int y = start; y < end; y++)
@@ -197,7 +207,7 @@ private:
         drawLine(p2,p0,c2,c0);
 
         int p = WINDOW_WIDTH * minY;
-        for (int y = minY; y < maxY; y++) {
+        for (int y = minY; y < maxY+1; y++) {
             float dx = triangleBuffer[y + largestSize]-triangleBuffer[y];
             
             colour currentColour = triangleColours[y];
