@@ -1,4 +1,4 @@
-FastEngine is lightweight CPU-based renderer that does the rendering without any additional tools then uses SDL3 to display the final rendered frame.
+FastEngine is lightweight CPU-based renderer that does the rendering without any additional tools then uses SDL3 to display the final rendered buffer.
 
 Build Instructions:
 
@@ -16,5 +16,3 @@ For Make file on windows:
 ```cmake -B build -S . -G "MinGW Makefiles"```
 ```cmake --build build```
 ```.\build\FastEngine.exe```
-* For quick rebuilds:
-```cmake --build build;.\build\FastEngine.exe```

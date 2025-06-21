@@ -1,5 +1,4 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#pragma once
 
 #include <SDL3/SDL.h>
 #include <stdexcept>
@@ -18,4 +17,3 @@ private:
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* texture = nullptr;
 };
-#endif

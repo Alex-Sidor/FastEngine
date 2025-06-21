@@ -5,14 +5,62 @@
 #include <chrono>
 #include <cmath>
 
+#include <stdio.h>
+
+struct vec3
+{
+    float x;
+    float y;
+    float z;
+    
+    vec3() : x(0), y(0), z(0){}
+    
+    vec3(float X, float Y, float Z){
+        x = X;
+        y = Y;
+        z = Z;
+    }
+
+    vec3 operator+(const vec3& other) const{
+        return vec3(x + other.x,y + other.y,z + other.z);
+    }
+
+    vec3 operator-(const vec3& other) const{
+        return vec3(x - other.x,y - other.y, z - other.z);
+    }
+
+    vec3& operator+=(const vec3& other) {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+};
+
 struct vec2
 {
     float x;
     float y;
     
+    vec2() : x(0), y(0){}
+    
     vec2(float X, float Y){
         x = X;
         y = Y;
+    }
+
+    vec2 operator+(const vec2& other) const{
+        return vec2(x + other.x,y + other.y);
+    }
+
+    vec2 operator-(const vec2& other) const{
+        return vec2(x - other.x,y - other.y);
+    }
+
+    vec2& operator+=(const vec2& other) {
+        x += other.x;
+        y += other.y;
+        return *this;
     }
 };
 
@@ -29,6 +77,29 @@ struct colour
         g = G;
         b = B;
     }
+
+    colour operator+(const colour& other) const {
+        return colour(r + other.r, g + other.g, b + other.b);
+    }
+
+    colour& operator+=(const colour& other) {
+        r += other.r;
+        g += other.g;
+        b += other.b;
+        return *this;
+    }
+
+    colour operator-(const colour& other) const {
+        return colour(r - other.r, g - other.g, b - other.b);
+    }
+
+    colour operator*(float scalar) const {
+        return colour(r * scalar, g * scalar, b * scalar);
+    }
+
+    colour operator/(float scalar) const {
+        return colour(r / scalar, g / scalar, b / scalar);
+    }
 };
 
 class Camera {
@@ -36,6 +107,8 @@ public:
     int WINDOW_WIDTH,WINDOW_HEIGHT;
 
     Uint32* pixelBuffer;
+
+    Uint32* pixelDepthBuffer;
 
     float angle = 0;
 
@@ -52,6 +125,9 @@ public:
 
         pixelBuffer = new Uint32[amountOfPixels];   
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
+
+        pixelDepthBuffer = new Uint32[amountOfPixels];   
+        SDL_memset4(pixelDepthBuffer, 0x00000000, amountOfPixels);
         
         triangleBuffer = new int[bufferSize];
         memset(triangleBuffer, -1, bufferSize*sizeof(int));
@@ -61,34 +137,41 @@ public:
 
     ~Camera(){
         delete[] pixelBuffer;
+        delete[] pixelDepthBuffer;
+        
         delete[] triangleBuffer;
     }
 
     void renderBuffer(){
-        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
+        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);//set screen to black
 
         float r = 200.0f;
         float cx = WINDOW_WIDTH/2;
         float cy = WINDOW_HEIGHT/2;
 
-        vec2 p0(
-            cx + SDL_cosf(angle) * r,
-            cy + SDL_sinf(angle) * r
+        vec3 p0(
+            SDL_cosf(angle) * r,
+            SDL_sinf(angle) * r,
+            1
         );
 
-        vec2 p1(
-            cx + SDL_cosf(angle + 2.094f) * r,
-            cy + SDL_sinf(angle + 2.094f) * r
+        vec3 p1(
+            SDL_cosf(angle + 2.094f) * r,
+            SDL_sinf(angle + 2.094f) * r,
+            1
         );
 
-        vec2 p2(
-            cx + SDL_cosf(angle + 4.188f) * r,
-            cy + SDL_sinf(angle + 4.188f) * r
+        vec3 p2(
+            SDL_cosf(angle + 4.188f) * r,
+            SDL_sinf(angle + 4.188f) * r,
+            50 - (SDL_sinf(angle*5)*48)
         );
 
-        colour c0 = colour(255, 0, 0);
-        colour c1 = colour(0, 255, 0);
-        colour c2 = colour(0, 0, 255);
+        std::cout << 50 - (SDL_sinf(angle*5)*48) << ": depth\n";
+
+        colour c0 = colour(1, 0, 0);
+        colour c1 = colour(0, 1, 0);
+        colour c2 = colour(0, 0, 1);
 
         triangle(p0, p1,p2, c0, c1, c2);
 
@@ -105,8 +188,13 @@ private:
     int largestSize;
     int bufferSize;
 
-    void placePoint(int p,colour c0) {
-        pixelBuffer[p] = (static_cast<Uint8>(c0.r) << 24) + (static_cast<Uint8>(c0.g) << 16) + (static_cast<Uint8>(c0.b) << 8) + 255;
+    void shader(int p,colour c0, float z0, float z1, float z2) {
+        
+        
+        float U = (c0.r*(0/z0))+(c0.g*(0/z1))+(c0.b*(1/z2));
+        float V = (c0.r*(0/z0))+(c0.g*(1/z1))+(c0.b*(0/z2));
+
+        pixelBuffer[p] = (static_cast<Uint8>(U*255) << 24) + (static_cast<Uint8>(V*255) << 16) + (static_cast<Uint8>(0) << 8) + 255;
     }
 
     void minMaxPlot(int x0, int y0,colour c0) {
@@ -142,11 +230,7 @@ private:
         int start = static_cast<int>(SDL_roundf(p0.y));
         int end = static_cast<int>(SDL_roundf(p1.y));
 
-        float slopeR = (c1.r - c0.r)/dy;
-
-        float slopeG = (c1.g - c0.g)/dy;
-
-        float slopeB = (c1.b - c0.b)/dy;
+        colour colourSlope = ((c1 - c0)/dy);
 
         if(start>end){
             std::swap(start,end);
@@ -173,13 +257,27 @@ private:
             minMaxPlot(static_cast<int>(p0.x),y,c0);
             p0.x += slope;
            
-            c0.r += slopeR;
-            c0.g += slopeG;
-            c0.b += slopeB;
+            c0 += colourSlope;
         }
     }
 
-    void triangle(vec2 p0, vec2 p1, vec2 p2, colour c0, colour c1, colour c2) { 
+    void triangle(vec3 p0, vec3 p1, vec3 p2) { 
+        if(p0.z <= 0 || p1.z <= 0 || p2.z <= 0){
+            return;
+        }
+
+        p0 = (vec3){p0.x/p0.z,p0.y/p0.z,p0.z};
+        p1 = (vec3){p1.x/p1.z,p1.y/p1.z,p1.z};
+        p2 = (vec3){p2.x/p2.z,p2.y/p2.z,p2.z};
+
+        p0.x += WINDOW_WIDTH/2;
+        p1.x += WINDOW_WIDTH/2;
+        p2.x += WINDOW_WIDTH/2;
+
+        p0.y += WINDOW_HEIGHT/2;
+        p1.y += WINDOW_HEIGHT/2;
+        p2.y += WINDOW_HEIGHT/2;
+        
         int minY, maxY;
 
         if (p0.y > p1.y) {
@@ -202,9 +300,9 @@ private:
         if(minY < 0) minY = 0;
         if(maxY > largestSize -1) maxY = largestSize;
 
-        drawLine(p0,p1,c0,c1);
-        drawLine(p1,p2,c1,c2);
-        drawLine(p2,p0,c2,c0);
+        drawLine((vec2){p0.x,p0.y},(vec2){p1.x,p1.y},(colour){1,0,0},(colour){0,1,0});
+        drawLine((vec2){p1.x,p1.y},(vec2){p2.x,p2.y},(colour){0,1,0},(colour){0,0,1});
+        drawLine((vec2){p2.x,p2.y},(vec2){p0.x,p0.y},(colour){0,0,1},(colour){1,0,0});
 
         int p = WINDOW_WIDTH * minY;
         for (int y = minY; y < maxY+1; y++) {
@@ -212,18 +310,12 @@ private:
             
             colour currentColour = triangleColours[y];
             
-            float slopeR = (triangleColours[y + largestSize].r - triangleColours[y].r)/dx;
-
-            float slopeG = (triangleColours[y + largestSize].g - triangleColours[y].g)/dx;
-
-            float slopeB = (triangleColours[y + largestSize].b - triangleColours[y].b)/dx;
+            colour slope = (triangleColours[y + largestSize] - triangleColours[y])/dx;
             
             for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize] + 1; x++) {
-                placePoint(p + x, currentColour);
+                shader(p + x, triangleColours[y],p0.z,p1.z,p2.z);
                 
-                currentColour.r += slopeR;
-                currentColour.g += slopeG;
-                currentColour.b += slopeB;
+                triangleColours[y] += slope;
             }
             
             triangleBuffer[y] = -1;
@@ -266,7 +358,9 @@ int main(int argc, char* argv[]) {
 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        
         SDL_Log("Frame Rendered in %lld triangles per second", 1000000/duration.count());
+        
         screen.displayBuffer(camera.pixelBuffer);
     }
     SDL_Quit();
