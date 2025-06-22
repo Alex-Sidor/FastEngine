@@ -101,6 +101,11 @@ struct colour
         return colour(r / scalar, g / scalar, b / scalar);
     }
 };
+//{{-100,-100,3},{100,-100,3},{-100,-100,5},{100,-100,5},{0,100,4}};
+
+vec3 objectVertexBuffer[5] = {{-100,100,1},{100,100,1},{-100,100,3},{100,100,3},{0,-100,2}};
+
+int objectTriangleBuffer[18] = {0,1,2,2,1,3,2,3,4,0,2,4,3,1,4,0,0,0};
 
 class Camera {
 public:
@@ -145,37 +150,10 @@ public:
     void renderBuffer(){
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);//set screen to black
 
-        float r = 200.0f;
-        float cx = WINDOW_WIDTH/2;
-        float cy = WINDOW_HEIGHT/2;
-
-        vec3 p0(
-            SDL_cosf(angle) * r,
-            SDL_sinf(angle) * r,
-            1
-        );
-
-        vec3 p1(
-            SDL_cosf(angle + 2.094f) * r,
-            SDL_sinf(angle + 2.094f) * r,
-            1
-        );
-
-        vec3 p2(
-            SDL_cosf(angle + 4.188f) * r,
-            SDL_sinf(angle + 4.188f) * r,
-            50 - (SDL_sinf(angle*5)*48)
-        );
-
-        std::cout << 50 - (SDL_sinf(angle*5)*48) << ": depth\n";
-
-        colour c0 = colour(1, 0, 0);
-        colour c1 = colour(0, 1, 0);
-        colour c2 = colour(0, 0, 1);
-
-        triangle(p0, p1,p2, c0, c1, c2);
-
-        angle += 0.001f;
+        for(int i = 0;i < 18; i+=3){
+            std::cout << objectTriangleBuffer[i] << objectTriangleBuffer[i+1]<< objectTriangleBuffer[i+2] << "\n";
+            triangle(objectVertexBuffer[objectTriangleBuffer[i]],objectVertexBuffer[objectTriangleBuffer[i+1]],objectVertexBuffer[objectTriangleBuffer[i+2]]);
+        }
     }
 
 private:
@@ -189,10 +167,21 @@ private:
     int bufferSize;
 
     void shader(int p,colour c0, float z0, float z1, float z2) {
-        
-        
-        float U = (c0.r*(0/z0))+(c0.g*(0/z1))+(c0.b*(1/z2));
-        float V = (c0.r*(0/z0))+(c0.g*(1/z1))+(c0.b*(0/z2));
+
+        float u0 = 0;
+        float u1 = 1;
+        float u2 = 0;
+
+        float v0 = 0;
+        float v1 = 0;
+        float v2 = 1;
+
+        float Up = (c0.r*(u0/z0))+(c0.g*(u1/z1))+(c0.b*(u2/z2));
+        float Vp = (c0.r*(v0/z0))+(c0.g*(v1/z1))+(c0.b*(v2/z2));
+        float Zp = (c0.r/z0)+(c0.g/z1)+(c0.b/z2);
+
+        float U = Up/Zp;
+        float V = Vp/Zp;
 
         pixelBuffer[p] = (static_cast<Uint8>(U*255) << 24) + (static_cast<Uint8>(V*255) << 16) + (static_cast<Uint8>(0) << 8) + 255;
     }
