@@ -1,111 +1,18 @@
 #include "screen.h"
+#include "vector.h"
 
 #include <iostream>
+
+#include <stdio.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 
-#include <stdio.h>
-
-struct vec3
-{
-    float x;
-    float y;
-    float z;
-    
-    vec3() : x(0), y(0), z(0){}
-    
-    vec3(float X, float Y, float Z){
-        x = X;
-        y = Y;
-        z = Z;
-    }
-
-    vec3 operator+(const vec3& other) const{
-        return vec3(x + other.x,y + other.y,z + other.z);
-    }
-
-    vec3 operator-(const vec3& other) const{
-        return vec3(x - other.x,y - other.y, z - other.z);
-    }
-
-    vec3& operator+=(const vec3& other) {
-        x += other.x;
-        y += other.y;
-        z += other.z;
-        return *this;
-    }
-};
-
-struct vec2
-{
-    float x;
-    float y;
-    
-    vec2() : x(0), y(0){}
-    
-    vec2(float X, float Y){
-        x = X;
-        y = Y;
-    }
-
-    vec2 operator+(const vec2& other) const{
-        return vec2(x + other.x,y + other.y);
-    }
-
-    vec2 operator-(const vec2& other) const{
-        return vec2(x - other.x,y - other.y);
-    }
-
-    vec2& operator+=(const vec2& other) {
-        x += other.x;
-        y += other.y;
-        return *this;
-    }
-};
-
-struct colour
-{
-    float r;
-    float g;
-    float b;
-    
-    colour() : r(0), g(0), b(0) {}
-
-    colour(float R, float G, float B){
-        r = R;
-        g = G;
-        b = B;
-    }
-
-    colour operator+(const colour& other) const {
-        return colour(r + other.r, g + other.g, b + other.b);
-    }
-
-    colour& operator+=(const colour& other) {
-        r += other.r;
-        g += other.g;
-        b += other.b;
-        return *this;
-    }
-
-    colour operator-(const colour& other) const {
-        return colour(r - other.r, g - other.g, b - other.b);
-    }
-
-    colour operator*(float scalar) const {
-        return colour(r * scalar, g * scalar, b * scalar);
-    }
-
-    colour operator/(float scalar) const {
-        return colour(r / scalar, g / scalar, b / scalar);
-    }
-};
-//{{-100,-100,3},{100,-100,3},{-100,-100,5},{100,-100,5},{0,100,4}};
+#include <math.h>
 
 vec3 objectVertexBuffer[5] = {{-100,100,1},{100,100,1},{-100,100,3},{100,100,3},{0,-100,2}};
-
-int objectTriangleBuffer[18] = {0,1,2,2,1,3,2,3,4,0,2,4,3,1,4,0,0,0};
+//0,1,4
+int objectTriangleBuffer[18] = {0,1,4,0,1,2,3,1,2,2,3,4,0,2,4,3,1,4};
 
 class Camera {
 public:
@@ -113,7 +20,7 @@ public:
 
     Uint32* pixelBuffer;
 
-    Uint32* pixelDepthBuffer;
+    float* pixelDepthBuffer;
 
     float angle = 0;
 
@@ -131,8 +38,10 @@ public:
         pixelBuffer = new Uint32[amountOfPixels];   
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
 
-        pixelDepthBuffer = new Uint32[amountOfPixels];   
-        SDL_memset4(pixelDepthBuffer, 0x00000000, amountOfPixels);
+        pixelDepthBuffer = new float[amountOfPixels];   
+        for(int i = 0;i < amountOfPixels; i++){
+            pixelDepthBuffer[i] = 0.0f;
+        }
         
         triangleBuffer = new int[bufferSize];
         memset(triangleBuffer, -1, bufferSize*sizeof(int));
@@ -149,11 +58,42 @@ public:
 
     void renderBuffer(){
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);//set screen to black
+        
+        angle += 0.01;
+
+        vec3 objectVertexBuffer[5] = {{sinf(angle + 3.92699081788) * 100,100,cosf(angle + 3.92699081788) + 2},{sinf(angle + 2.35619449073) * 100,100,cosf(angle + 2.35619449073) + 2
+},{sinf(angle + 5.49778714504) * 100,100,cosf(angle + 5.49778714504) + 2},{sinf(angle + 0.785398163577) * 100,100,cosf(angle + 0.785398163577) + 2},{0,-100,2}};
+
+        for(int i = 0;i < amountOfPixels; i++){
+            pixelDepthBuffer[i] = 0.0f;
+        }
 
         for(int i = 0;i < 18; i+=3){
-            std::cout << objectTriangleBuffer[i] << objectTriangleBuffer[i+1]<< objectTriangleBuffer[i+2] << "\n";
             triangle(objectVertexBuffer[objectTriangleBuffer[i]],objectVertexBuffer[objectTriangleBuffer[i+1]],objectVertexBuffer[objectTriangleBuffer[i+2]]);
         }
+    }
+
+    void convertDepthIntoGrayscale(float highest, float lowest){
+        
+        if(highest == lowest){
+            for(int i = 0;i < amountOfPixels; i++){
+                if(pixelDepthBuffer[i] > highest && pixelDepthBuffer[i] != 0.0f){
+                    highest = pixelDepthBuffer[i];
+                }
+                else{
+                    if(pixelDepthBuffer[i] < lowest && pixelDepthBuffer[i] != 0.0f){
+                        lowest = pixelDepthBuffer[i];
+                    }
+                }
+            }
+        }     
+
+        for(int i = 0;i < amountOfPixels; i++){
+            Uint8 singleChannelColour = static_cast<Uint8>(roundf(((lowest - pixelDepthBuffer[i]) / (highest-lowest))*255));
+
+            pixelBuffer[i] = (static_cast<Uint8>(singleChannelColour) << 24) + (static_cast<Uint8>(singleChannelColour) << 16) + (static_cast<Uint8>(singleChannelColour) << 8) + 255;
+        }
+
     }
 
 private:
@@ -254,19 +194,23 @@ private:
         if(p0.z <= 0 || p1.z <= 0 || p2.z <= 0){
             return;
         }
-
-        p0 = (vec3){p0.x/p0.z,p0.y/p0.z,p0.z};
-        p1 = (vec3){p1.x/p1.z,p1.y/p1.z,p1.z};
-        p2 = (vec3){p2.x/p2.z,p2.y/p2.z,p2.z};
-
-        p0.x += WINDOW_WIDTH/2;
-        p1.x += WINDOW_WIDTH/2;
-        p2.x += WINDOW_WIDTH/2;
-
-        p0.y += WINDOW_HEIGHT/2;
-        p1.y += WINDOW_HEIGHT/2;
-        p2.y += WINDOW_HEIGHT/2;
         
+        float u0 = 0;
+        float u1 = 1;
+        float u2 = 0;
+
+        float v0 = 0;
+        float v1 = 0;
+        float v2 = 1;
+
+        p0.x = (p0.x / p0.z) + halfWidth;
+        p1.x = (p1.x / p1.z) + halfWidth;
+        p2.x = (p2.x / p2.z) + halfWidth;
+
+        p0.y = (p0.y / p0.z) + halfHeight;
+        p1.y = (p1.y / p1.z) + halfHeight;
+        p2.y = (p2.y / p2.z) + halfHeight;
+
         int minY, maxY;
 
         if (p0.y > p1.y) {
@@ -289,9 +233,9 @@ private:
         if(minY < 0) minY = 0;
         if(maxY > largestSize -1) maxY = largestSize;
 
-        drawLine((vec2){p0.x,p0.y},(vec2){p1.x,p1.y},(colour){1,0,0},(colour){0,1,0});
-        drawLine((vec2){p1.x,p1.y},(vec2){p2.x,p2.y},(colour){0,1,0},(colour){0,0,1});
-        drawLine((vec2){p2.x,p2.y},(vec2){p0.x,p0.y},(colour){0,0,1},(colour){1,0,0});
+        drawLine((vec2){p0.x, p0.y}, (vec2){p1.x, p1.y} ,(colour){1,0,0}, (colour){0,1,0});
+        drawLine((vec2){p1.x, p1.y}, (vec2){p2.x, p2.y} ,(colour){0,1,0}, (colour){0,0,1});
+        drawLine((vec2){p2.x, p2.y}, (vec2){p0.x, p0.y} ,(colour){0,0,1}, (colour){1,0,0});
 
         int p = WINDOW_WIDTH * minY;
         for (int y = minY; y < maxY+1; y++) {
@@ -302,26 +246,53 @@ private:
             colour slope = (triangleColours[y + largestSize] - triangleColours[y])/dx;
             
             for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize] + 1; x++) {
-                shader(p + x, triangleColours[y],p0.z,p1.z,p2.z);
+             
+
                 
+                
+                float Zp = (triangleColours[y].r / p0.z) + (triangleColours[y].g/p1.z) + (triangleColours[y].b/p2.z);
+                float pixelZ = 1/Zp;
+
+                if (pixelDepthBuffer[p + x] > pixelZ || pixelDepthBuffer[p + x] == 0){
+                    pixelDepthBuffer[p + x] = pixelZ;
+                    
+                    float Up = (triangleColours[y].r * (u0/p0.z)) + (triangleColours[y].g*(u1/p1.z)) + (triangleColours[y].b * (u2/p2.z));
+                    float Vp = (triangleColours[y].r * (v0/p0.z)) + (triangleColours[y].g*(v1/p1.z)) + (triangleColours[y].b * (v2/p2.z));
+                    
+                    float U = Up/Zp;
+                    float V = Vp/Zp;
+
+                    //shader start
+                
+                    V = std::floorf(V*10);
+                    U = (std::floorf(U*10))*11;
+
+                    float c = std::fmod((U+V),2);
+                    
+                    if(c == 0){
+                        pixelBuffer[p + x] = (static_cast<Uint8>(255) << 24) + (static_cast<Uint8>(255) << 16) + (static_cast<Uint8>(255) << 8) + 255;
+                    }else{
+                        pixelBuffer[p + x] = (static_cast<Uint8>(0) << 24) + (static_cast<Uint8>(0) << 16) + (static_cast<Uint8>(0) << 8) + 255;
+                    }
+                    
+                    //shader end
+
+                    
+                } 
+
                 triangleColours[y] += slope;
+                
             }
             
             triangleBuffer[y] = -1;
             triangleBuffer[y+largestSize] = -1;
             p += WINDOW_WIDTH;
         }
-
-        /*for (int i = 0; i < bufferSize; i++)
-        {
-            if(triangleBuffer[i] != -1){
-                std::cout << i << "uncleaned buffer position\n";
-            }
-        }*/
     }
 };
 
 int main(int argc, char* argv[]) {
+    
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Failed to init SDL: %s", SDL_GetError());
         return 1;
@@ -350,6 +321,8 @@ int main(int argc, char* argv[]) {
         
         SDL_Log("Frame Rendered in %lld triangles per second", 1000000/duration.count());
         
+        //camera.convertDepthIntoGrayscale(0.5,3.5);
+
         screen.displayBuffer(camera.pixelBuffer);
     }
     SDL_Quit();
