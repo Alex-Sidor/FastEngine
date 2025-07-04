@@ -131,32 +131,22 @@ private:
         vec3 colourSlope = ((c1 - c0)/dy);
 
         if(start>end){
-            std::swap(start,end);
+            for (int y = end; y < start; y++)
+            {
+                minMaxPlot(static_cast<int>(p1.x),y,c1);
+                p1.x += slope;
             
-            float temp = p0.x;
-            p0.x = p1.x;
-            p1.x = temp;
-
-            temp = c0.x;
-            c0.x = c1.x;
-            c1.x = temp;
-
-            temp = c0.y;
-            c0.y = c1.y;
-            c1.y = temp;
-
-            temp = c0.z;
-            c0.z = c1.z;
-            c1.z = temp;
-        }
-
-        for (int y = start; y < end; y++)
-        {
-            minMaxPlot(static_cast<int>(p0.x),y,c0);
-            p0.x += slope;
-           
-            c0 += colourSlope;
-        }
+                c1 += colourSlope;
+            }
+        }else{
+            for (int y = start; y < end; y++)
+            {
+                minMaxPlot(static_cast<int>(p0.x),y,c0);
+                p0.x += slope;
+            
+                c0 += colourSlope;
+            }
+        } 
     }
 
     void triangle(vec3 p0, vec3 p1, vec3 p2) { 
