@@ -14,6 +14,8 @@ vec3 objectVertexBuffer[5] = {{-100,100,1},{100,100,1},{-100,100,3},{100,100,3},
 
 int objectTriangleBuffer[18] = {0,1,4,0,1,2,3,1,2,2,3,4,0,2,4,3,1,4};
 
+vec3 objectVertexBuffer[5] = {{,100,},{,100,},{,100,},{,100,},{,100,}};
+
 class Camera {
 public:
     int WINDOW_WIDTH,WINDOW_HEIGHT;
@@ -37,12 +39,8 @@ public:
         bufferSize = largestSize * 2;
 
         pixelBuffer = new Uint32[amountOfPixels];   
-        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);
 
         pixelDepthBuffer = new float[amountOfPixels];   
-        for(int i = 0;i < amountOfPixels; i++){
-            pixelDepthBuffer[i] = 0.0f;
-        }
         
         triangleBuffer = new int[bufferSize];
         memset(triangleBuffer, -1, bufferSize*sizeof(int));
@@ -60,17 +58,19 @@ public:
 
     void renderBuffer(){
         SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);//set screen to black
-        
-        angle += 0.01;
+        memset(pixelDepthBuffer, 0, sizeof(float) * amountOfPixels);
 
+        angle += 0.01;
+        
+        float sin = sinf(angle);
+        float cos = cosf(angle);
+        
         vec3 objectVertexBuffer[5] = {{sinf(angle + 3.92699081788)  * 100,100,cosf(angle + 3.92699081788)  + 2},
                                       {sinf(angle + 2.35619449073)  * 100,100,cosf(angle + 2.35619449073)  + 2},
                                       {sinf(angle + 5.49778714504)  * 100,100,cosf(angle + 5.49778714504)  + 2},
                                       {sinf(angle + 0.785398163577) * 100,100,cosf(angle + 0.785398163577) + 2},{0,-100,2}};
 
-        for(int i = 0;i < amountOfPixels; i++){
-            pixelDepthBuffer[i] = 0.0f;
-        }
+
 
         for(int i = 0;i < 18; i+=3){
             triangle(objectVertexBuffer[objectTriangleBuffer[i]],objectVertexBuffer[objectTriangleBuffer[i+1]],objectVertexBuffer[objectTriangleBuffer[i+2]]);
@@ -94,6 +94,11 @@ private:
     int amountOfPixels;
     int largestSize;
     int bufferSize;
+
+    void rotateVector(vec3& original,float sin,float cos){
+        original.x = (original.x*cos)-(original.y*sin);
+        original.y = (original.x*sin)-(original.y*cos);
+    }
 
     void minMaxPlot(int x0, int y0,vec3 c0) {
         if (x0 < 0 || x0 > WINDOW_WIDTH -1 || y0 < 0 || y0 > WINDOW_HEIGHT-1) return;
@@ -212,20 +217,14 @@ private:
                 if (pixelDepthBuffer[p + x] > pixelZ || pixelDepthBuffer[p + x] == 0){
                     pixelDepthBuffer[p + x] = pixelZ;
                     
-                    float Up = (triangleWeights[y].x * (u0/p0.z)) + (triangleWeights[y].y*(u1/p1.z)) + (triangleWeights[y].z * (u2/p2.z));
-                    float Vp = (triangleWeights[y].x * (v0/p0.z)) + (triangleWeights[y].y*(v1/p1.z)) + (triangleWeights[y].z * (v2/p2.z));
-                    
-                    float U = Up/Zp;
-                    float V = Vp/Zp;
+                    float U = ((triangleWeights[y].x * (u0/p0.z)) + (triangleWeights[y].y*(u1/p1.z)) + (triangleWeights[y].z * (u2/p2.z)))/Zp;
+                    float V = ((triangleWeights[y].x * (v0/p0.z)) + (triangleWeights[y].y*(v1/p1.z)) + (triangleWeights[y].z * (v2/p2.z)))/Zp;
 
                     //shader start
                 
-                    int sV = int(V*10);
-                    int sU = (int(U*10))*11;
-
-                    int c = (sU+sV) % 2;
+                    int box = (static_cast<int>(V*10)-static_cast<int>(U*10)) % 2; //checkerboard
                     
-                    if(c == 0){
+                    if(box == 0){
                         pixelBuffer[p + x] = 4294967295; //white (2^32)-1
                     }else{
                         pixelBuffer[p + x] = 255; //black (2^8)-1
@@ -258,7 +257,7 @@ int main(int argc, char* argv[]) {
     bool running = true;
     SDL_Event event;
 
-    while (running) {
+    while(running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT)
                 running = false;
