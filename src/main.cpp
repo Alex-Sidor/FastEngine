@@ -10,11 +10,11 @@
 
 #include <math.h>
 
-vec3 objectVertexBuffer[5] = {{-100,100,1},{100,100,1},{-100,100,3},{100,100,3},{0,-100,2}};
+vec3 objectVertexBuffer[5];
 
 int objectTriangleBuffer[18] = {0,1,4,0,1,2,3,1,2,2,3,4,0,2,4,3,1,4};
 
-vec3 objectVertexBuffer[5] = {{,100,},{,100,},{,100,},{,100,},{,100,}};
+vec3 objectVertex[5] = {{-1,1,2},{1,1,2},{-1,1,4},{1,1,4},{0,-1,3}};
 
 class Camera {
 public:
@@ -25,14 +25,22 @@ public:
     float* pixelDepthBuffer;
 
     float angle = 0;
-    float fov = 0.2;
+    float fov;
+    
+    float viewportScaleX;
+    float viewportScaleY;
 
-    Camera(int width, int height){
+    Camera(int width, int height,float fieldOfView, float scale){
         WINDOW_WIDTH = width;
         WINDOW_HEIGHT = height;
 
         halfWidth = width/2;
         halfHeight = height/2;
+        
+        fov = tanf(fieldOfView/2)*2;
+        
+        viewportScaleX = (halfWidth * scale) / fov;        
+        viewportScaleY = (halfHeight * scale) / fov;
 
         amountOfPixels = width * height;
         largestSize = height;
@@ -62,22 +70,19 @@ public:
 
         angle += 0.01;
         
-        float sin = sinf(angle);
-        float cos = cosf(angle);
-        
-        vec3 objectVertexBuffer[5] = {{sinf(angle + 3.92699081788)  * 100,100,cosf(angle + 3.92699081788)  + 2},
-                                      {sinf(angle + 2.35619449073)  * 100,100,cosf(angle + 2.35619449073)  + 2},
-                                      {sinf(angle + 5.49778714504)  * 100,100,cosf(angle + 5.49778714504)  + 2},
-                                      {sinf(angle + 0.785398163577) * 100,100,cosf(angle + 0.785398163577) + 2},{0,-100,2}};
+        float s = sinf(angle);
+        float c = cosf(angle);
 
-
+        for(int i = 0; i < 5; i++){
+		objectVertexBuffer[i] = rotateVector(objectVertex[i],{0,0,3},s,c);
+	}
 
         for(int i = 0;i < 18; i+=3){
             triangle(objectVertexBuffer[objectTriangleBuffer[i]],objectVertexBuffer[objectTriangleBuffer[i+1]],objectVertexBuffer[objectTriangleBuffer[i+2]]);
         }
     }
 
-    void convertDepthIntoGrayscale(float highest, float lowest){ 
+    void convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest){ 
         for(int i = 0;i < amountOfPixels; i++){
             Uint8 singleChannelColour = static_cast<Uint8>(((lowest - pixelDepthBuffer[i]) / (highest-lowest))*255);
 
@@ -95,9 +100,11 @@ private:
     int largestSize;
     int bufferSize;
 
-    void rotateVector(vec3& original,float sin,float cos){
-        original.x = (original.x*cos)-(original.y*sin);
-        original.y = (original.x*sin)-(original.y*cos);
+    vec3 rotateVector(vec3 original,vec3 pivot,float sin,float cos){
+	float newX = original.x-pivot.x;
+	float newZ = original.z-pivot.z;
+
+        return (vec3){((newX*cos)-(newZ*sin))+pivot.x,original.y,((newX*sin)+(newZ*cos))+pivot.z};
     }
 
     void minMaxPlot(int x0, int y0,vec3 c0) {
@@ -155,7 +162,9 @@ private:
     }
 
     void triangle(vec3 p0, vec3 p1, vec3 p2) { 
+        
         if(p0.z <= 0 || p1.z <= 0 || p2.z <= 0){
+            std::cout << "behind viewport - move forwards\n";
             return;
         }
         
@@ -167,14 +176,21 @@ private:
         float v1 = 0;
         float v2 = 1;
 
-        p0.x = (p0.x / (p0.z * fov)) + halfWidth;
-        p1.x = (p1.x / (p1.z * fov)) + halfWidth;
-        p2.x = (p2.x / (p2.z * fov)) + halfWidth;
+        p0.x = (viewportScaleY * p0.x / (p0.z * fov)) + halfWidth;
+        p1.x = (viewportScaleY * p1.x / (p1.z * fov)) + halfWidth;
+        p2.x = (viewportScaleY * p2.x / (p2.z * fov)) + halfWidth;
+        
+        p0.y = (viewportScaleY * p0.y / (p0.z * fov)) + halfHeight;
+        p1.y = (viewportScaleY * p1.y / (p1.z * fov)) + halfHeight;
+        p2.y = (viewportScaleY * p2.y / (p2.z * fov)) + halfHeight;
+        
+        vec2 v1d = (vec2){p1.x - p0.x,p1.y - p0.y};
+        vec2 v2d = (vec2){p2.x - p0.x,p2.y - p0.y};
 
-        p0.y = (p0.y / (p0.z * fov)) + halfHeight;
-        p1.y = (p1.y / (p1.z * fov)) + halfHeight;
-        p2.y = (p2.y / (p2.z * fov)) + halfHeight;
-
+        if(((v1d.y*v2d.x) - (v1d.x*v2d.y)) <= 0){
+          return;
+        }
+        
         int minY, maxY;
 
         if (p0.y > p1.y) {
@@ -197,34 +213,44 @@ private:
         if(minY < 0) minY = 0;
         if(maxY > largestSize -1) maxY = largestSize;
 
-        drawLine((vec2){p0.x, p0.y}, (vec2){p1.x, p1.y} ,(vec3){1,0,0}, (vec3){0,1,0});
-        drawLine((vec2){p1.x, p1.y}, (vec2){p2.x, p2.y} ,(vec3){0,1,0}, (vec3){0,0,1});
-        drawLine((vec2){p2.x, p2.y}, (vec2){p0.x, p0.y} ,(vec3){0,0,1}, (vec3){1,0,0});
-
+        drawLine((vec2){p0.x, p0.y}, (vec2){p1.x, p1.y}, (vec3){1,0,0}, (vec3){0,1,0});
+        drawLine((vec2){p1.x, p1.y}, (vec2){p2.x, p2.y}, (vec3){0,1,0}, (vec3){0,0,1});
+        drawLine((vec2){p2.x, p2.y}, (vec2){p0.x, p0.y}, (vec3){0,0,1}, (vec3){1,0,0});
+        
+        float pixelZ;
+        
         int p = WINDOW_WIDTH * minY;
-        for (int y = minY; y < maxY+1; y++) {
-            float dx = triangleBuffer[y + largestSize]-triangleBuffer[y];
-            
+        
+        float u0invp0z = u0/p0.z;
+        float u1invp1z = u1/p1.z;
+        float u2invp2z = u2/p2.z;
+        
+        float v0invp0z = v0/p0.z;
+        float v1invp1z = v1/p1.z;
+        float v2invp2z = v2/p2.z;
+        
+        float invp0z = 1/p0.z;
+        float invp1z = 1/p1.z;
+        float invp2z = 1/p2.z;
+        
+        for (int y = minY; y < maxY+1; y++) {          
             vec3 currentColour = triangleWeights[y];
             
-            vec3 slope = (triangleWeights[y + largestSize] - triangleWeights[y])/dx;
+            vec3 slope = (triangleWeights[y + largestSize] - triangleWeights[y]) / (triangleBuffer[y + largestSize] - triangleBuffer[y]);
             
-            for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize]/* +1 i have no idea what this did before but when i removed it it fixed weird artifacts so until i get the articats i was trying to remove before this comment is staying here*/; x++) {
+            for (int x = triangleBuffer[y]; x < triangleBuffer[y + largestSize]/* +1 i have no idea what this did before but when i removed it it fixed weird artifacts*/; x++) {
                 
-                float Zp = (triangleWeights[y].x / p0.z) + (triangleWeights[y].y/p1.z) + (triangleWeights[y].z/p2.z);
-                float pixelZ = 1/Zp;
+                pixelZ = 1/((triangleWeights[y].x * invp0z) + (triangleWeights[y].y * invp1z) + (triangleWeights[y].z * invp2z));
 
                 if (pixelDepthBuffer[p + x] > pixelZ || pixelDepthBuffer[p + x] == 0){
                     pixelDepthBuffer[p + x] = pixelZ;
                     
-                    float U = ((triangleWeights[y].x * (u0/p0.z)) + (triangleWeights[y].y*(u1/p1.z)) + (triangleWeights[y].z * (u2/p2.z)))/Zp;
-                    float V = ((triangleWeights[y].x * (v0/p0.z)) + (triangleWeights[y].y*(v1/p1.z)) + (triangleWeights[y].z * (v2/p2.z)))/Zp;
+                    float U = ((triangleWeights[y].x * u0invp0z) + (triangleWeights[y].y * u1invp1z) + (triangleWeights[y].z * u2invp2z)) * pixelZ;
+                    float V = ((triangleWeights[y].x * v0invp0z) + (triangleWeights[y].y * v1invp1z) + (triangleWeights[y].z * v2invp2z)) * pixelZ;
 
                     //shader start
-                
-                    int box = (static_cast<int>(V*10)-static_cast<int>(U*10)) % 2; //checkerboard
                     
-                    if(box == 0){
+                    if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
                         pixelBuffer[p + x] = 4294967295; //white (2^32)-1
                     }else{
                         pixelBuffer[p + x] = 255; //black (2^8)-1
@@ -250,7 +276,7 @@ int main(int argc, char* argv[]) {
     }
 
     Screen screen(1000, 1000);
-    Camera camera(1000, 1000);
+    Camera camera(1000, 1000,120,0.5);
 
     std::cout << screen.error << "\n";
 
@@ -270,9 +296,9 @@ int main(int argc, char* argv[]) {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
         
-        SDL_Log("Frame Rendered in %lld triangles per second", 1000000/duration.count());
+        SDL_Log("%ld frames per second", 1000000/duration.count());
         
-        //camera.convertDepthIntoGrayscale(0,3);
+        //camera.convertDepthIntoGrayscaleAndDisplayTobuffer(0,10);
 
         screen.displayBuffer(camera.pixelBuffer);
     }
