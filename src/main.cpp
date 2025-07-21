@@ -48,19 +48,11 @@ public:
         pixelBuffer = new Uint32[amountOfPixels];   
 
         pixelDepthBuffer = new float[amountOfPixels];   
-        
-        triangleBuffer = new int[bufferSize];
-        memset(triangleBuffer, -1, bufferSize*sizeof(int));
-        
-        triangleWeights = new vec3[bufferSize]; 
     }
 
     ~Camera(){
         delete[] pixelBuffer;
         delete[] pixelDepthBuffer;
-        
-        delete[] triangleBuffer;
-        delete[] triangleWeights;
     }
 
     void renderBuffer(){
@@ -117,115 +109,72 @@ private:
         tramsformed.z = ((newX*sin)+(newZ*cos))+pivot.z;
     }
 
-    void minMaxPlot(int x0, int y0,vec3 c0) {
-        if (x0 < 0 || x0 > WINDOW_WIDTH -1 || y0 < 0 || y0 > WINDOW_HEIGHT-1){
-            //::cout << "pixel out of range\n";
-            return;
-        }
-        
-        if (triangleBuffer[y0] == -1) {
-            triangleBuffer[y0] = x0;
-            triangleBuffer[y0 + bufferOffset] = x0;
+    void drawPixel(float w1, float w2, float w3,int x, int y,float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z){//temporary
+        float pixelZ = 1/((w1 * invp0z) + (w2 * invp1z) + (w3 * invp2z));
+
+        int p = x + (y*WINDOW_WIDTH);
+
+        if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0){
+            pixelDepthBuffer[p] = pixelZ;
             
-            triangleWeights[y0] = c0;
-            triangleWeights[y0 + bufferOffset] = c0;
-
-        } else {
-            if (x0 < triangleBuffer[y0]){
-                triangleBuffer[y0] = x0;
-                triangleWeights[y0] = c0;
-            }
-            else {
-                if (x0 > triangleBuffer[y0 + bufferOffset]){
-                    triangleBuffer[y0 + bufferOffset] = x0;
-                    triangleWeights[y0 + bufferOffset] = c0;
-                }
-            }   
-        }
-    }
-
-    inline void drawLine(vec2 p0, vec2 p1, vec3 w0, vec3 w1) {
-        float dx = p1.x - p0.x;
-        float dy = 1/(p1.y - p0.y);
-
-        float slope = dx*dy;
-
-        int start = static_cast<int>(SDL_roundf(p0.y));
-        int end = static_cast<int>(SDL_roundf(p1.y));
-
-        vec3 colourSlope = (w1 - w0)*dy;
-
-        if(start>end){
-            for (int y = end; y < start; y++)
-            {
-                minMaxPlot(static_cast<int>(p1.x),y,w1);
-                p1.x += slope;
+            float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
+            float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
             
-                w1 += colourSlope;
-            }
-        }else{
-            for (int y = start; y < end; y++)
-            {
-                minMaxPlot(static_cast<int>(p0.x),y,w0);
-                p0.x += slope;
-            
-                w0 += colourSlope;
+            if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
+                pixelBuffer[p] = 4294967295; //white (2^32)-1
+            }else{
+                pixelBuffer[p] = 255; //black (2^8)-1
             }
         } 
     }
 
-    inline void triangle(vec3 p0, vec3 p1, vec3 p2) { 
+
+    inline float triangleArea(const vec2& a, const vec2& b, const vec2& c) {
+        return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+    }
+
+    inline float min3(float a, float b, float c) {
+        float m = a;
+        if (b < m) m = b;
+        if (c < m) m = c;
+        return m;
+    }
+
+    inline float max3(float a, float b, float c) {
+        float m = a;
+        if (b > m) m = b;
+        if (c > m) m = c;
+        return m;
+    }
+
+    void triangle(vec3 p0, vec3 p1, vec3 p2) { 
         
+        const float epsilon = 0;//-1e-6f; //compensate for floating point error
+
         if(p0.z <= 0 || p1.z <= 0 || p2.z <= 0){
-            std::cout << "behind viewport - move forwards\n";
+            std::cout << "triangle behind viewport deleted\n";
             return;
         }
-        
-        float u0 = 0;
-        float u1 = 1;
-        float u2 = 0;
-
-        float v0 = 0;
-        float v1 = 0;
-        float v2 = 1;
         
         vec2 edgeVector1 = (vec2){p1.x - p0.x,p1.y - p0.y};
         vec2 edgeVector2 = (vec2){p2.x - p0.x,p2.y - p0.y};
 
-        if(((edgeVector1.y*edgeVector2.x) - (edgeVector1.x*edgeVector2.y)) <= 0){
-          return;
+        float fullArea = triangleArea({p0.x,p0.y},{p1.x,p1.y},{p2.x,p2.y});
+
+        if(fullArea >= 0){
+          return;//dont draw the triangle if its backface
         }
-        
-        int minY, maxY;
 
-        if (p0.y > p1.y) {
-            if (p0.y > p2.y) maxY = p0.y;
-            else maxY = p2.y;
+        const float u0 = 0;
+        const float u1 = 1;
+        const float u2 = 0;
 
-            if (p1.y < p2.y) minY = p1.y;
-            else minY = p2.y;
-        } else {
-            if (p1.y > p2.y) maxY = p1.y;
-            else maxY = p2.y;
+        const float v0 = 0;
+        const float v1 = 0;
+        const float v2 = 1; //temp uv mapping
+        
+        fullArea = 1 / fullArea;
 
-            if (p0.y < p2.y) minY = p0.y;
-            else minY = p2.y;
-        }
-        
-        minY = static_cast<int>(roundf(minY));
-        maxY = static_cast<int>(roundf(maxY));
-
-        if(minY < 0) minY = 0;
-        if(maxY > bufferOffset -1) maxY = bufferOffset;
-
-        drawLine({p0.x, p0.y}, {p1.x, p1.y}, {1,0,0}, {0,1,0});
-        drawLine({p1.x, p1.y}, {p2.x, p2.y}, {0,1,0}, {0,0,1});
-        drawLine({p2.x, p2.y}, {p0.x, p0.y}, {0,0,1}, {1,0,0});
-        
-        float pixelZ;
-        
-        int p = WINDOW_WIDTH * minY;
-        
         float u0invp0z = u0/p0.z;
         float u1invp1z = u1/p1.z;
         float u2invp2z = u2/p2.z;
@@ -236,40 +185,28 @@ private:
         
         float invp0z = 1/p0.z;
         float invp1z = 1/p1.z;
-        float invp2z = 1/p2.z;
-        
-        for (int y = minY; y < maxY+1; y++) {          
-            vec3 currentColour = triangleWeights[y];/* +1 i have no idea what this did before but when i removed it it fixed weird artifacts*/
-            
-            vec3 slope = (triangleWeights[y + bufferOffset] - triangleWeights[y]) / (triangleBuffer[y + bufferOffset] - triangleBuffer[y]);
-            
-            for (int x = std::max(triangleBuffer[y],0) + p; x < std::min(triangleBuffer[y + bufferOffset],WINDOW_WIDTH-1) + p; x++) {
+        float invp2z = 1/p2.z; // calculate inverses once and multiply to save on division clock cycles
+
+        int minX = static_cast<int>(std::floor(min3(p0.x,p1.x,p2.x)));
+        int minY = static_cast<int>(std::floor(min3(p0.y,p1.y,p2.y)));
+        int maxX = static_cast<int>(std::ceil(max3(p0.x,p1.x,p2.x)));
+        int maxY = static_cast<int>(std::ceil(max3(p0.y,p1.y,p2.y)));
+
+        for(int y = minY; y <  maxY; y++){
+            for(int x = minX; x < maxX; x++){
+                float w1 = triangleArea({p1.x,p1.y},{p2.x,p2.y},{(float)x,(float)y})*fullArea;
+                if(w1 < epsilon) continue;
                 
-                pixelZ = 1/((triangleWeights[y].x * invp0z) + (triangleWeights[y].y * invp1z) + (triangleWeights[y].z * invp2z));
+                float w2 = triangleArea({p2.x,p2.y},{p0.x,p0.y},{(float)x,(float)y})*fullArea;
+                if(w2 < epsilon) continue;
+                
+                float w3 = (1.0f - w1) - w2;
+                if(w3 < epsilon) continue;
+                
+                //pixelBuffer[x+(WINDOW_WIDTH*y)] = 4294967295;
 
-                if (pixelDepthBuffer[x] > pixelZ || pixelDepthBuffer[x] == 0){
-                    pixelDepthBuffer[x] = pixelZ;
-                    
-                    float U = ((triangleWeights[y].x * u0invp0z) + (triangleWeights[y].y * u1invp1z) + (triangleWeights[y].z * u2invp2z)) * pixelZ;
-                    float V = ((triangleWeights[y].x * v0invp0z) + (triangleWeights[y].y * v1invp1z) + (triangleWeights[y].z * v2invp2z)) * pixelZ;
-
-                    //shader start
-                    
-                    if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
-                        pixelBuffer[x] = 4294967295; //white (2^32)-1
-                    }else{
-                        pixelBuffer[x] = 255; //black (2^8)-1
-                    }
-                    
-                    //shader end
-                } 
-
-                triangleWeights[y] += slope;
+                drawPixel(w1,w2,w3,x,y,u0invp0z,u1invp1z,u2invp2z,v0invp0z,v1invp1z,v2invp2z,invp0z,invp1z,invp2z);
             }
-            
-            triangleBuffer[y] = -1;
-            triangleBuffer[y+bufferOffset] = -1;
-            p += WINDOW_WIDTH;
         }
     }
 };
@@ -291,7 +228,7 @@ int main(int argc, char* argv[]) {
     }
 
     Screen screen(1000, 1000);
-    Camera camera(1000, 1000,120,1);
+    Camera camera(1000, 1000,120,0.5);
 
     std::cout << screen.error << "\n";
 
