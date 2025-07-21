@@ -2,14 +2,13 @@
 #include "vector.h"
 
 #include <iostream>
+#include <fstream>
 
 #include <stdio.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-
 #include <string>
-
 #include <math.h>
 
 vec3 objectVertexBuffer[5];
@@ -120,11 +119,13 @@ private:
             float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
             float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
             
-            if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
+            /*if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
                 pixelBuffer[p] = 4294967295; //white (2^32)-1
             }else{
                 pixelBuffer[p] = 255; //black (2^8)-1
-            }
+            }*/
+
+            pixelBuffer[p] = ((static_cast<Uint8>(U*255) << 24) + (static_cast<Uint8>(V*255) << 16) + 255);
         } 
     }
 
@@ -218,6 +219,26 @@ void count(int*array,int size){
     }
 }
 
+void readStuffAndWriteStuff(){
+    using namespace std;
+    
+    ofstream MyWriteFile("assets/filename.txt");
+
+    MyWriteFile << "file test";
+    
+    MyWriteFile.close();
+
+    string myText;
+
+    ifstream MyReadFile("assets/filename.txt");
+
+    while (getline (MyReadFile, myText)) {
+        cout << myText;
+    }
+
+    MyReadFile.close();
+}
+
 float avgFps = 0;
 Uint8 frameCount = 0;
 
@@ -243,6 +264,8 @@ int main(int argc, char* argv[]) {
 
     int a;
     std::cout << a << "\n";
+
+    readStuffAndWriteStuff();
 
     while(running) {
         while (SDL_PollEvent(&event)) {
