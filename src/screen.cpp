@@ -17,6 +17,7 @@ Screen::Screen(int x, int y) {
     }
 }
 
+
 void Screen::displayBuffer(Uint32* buffer) {
     SDL_UpdateTexture(texture, NULL, buffer, width);
     SDL_RenderTexture(renderer, texture, NULL, NULL);

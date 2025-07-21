@@ -214,9 +214,29 @@ private:
 
 void count(int*array,int size){
     for(int i = 0; i< size; i++){
-        *array=i;
-        array ++;
+        array[i] = i;
     }
+}
+
+void readOutObjectFileContents(){
+    std::ifstream objectFile("assets/cube.obj");
+
+    std::string contents;
+
+    while(getline (objectFile, contents)){
+        char* fixedString;
+        
+        if(contents.starts_with("v")){
+            SDL_Log("Vertex\n");
+        }
+        if(contents.starts_with("n")){
+            SDL_Log("normal\n");
+        }
+
+        std::cout << contents[0];
+    }
+
+    objectFile.close();
 }
 
 void readStuffAndWriteStuff(){
@@ -265,7 +285,9 @@ int main(int argc, char* argv[]) {
     int a;
     std::cout << a << "\n";
 
-    readStuffAndWriteStuff();
+    //readStuffAndWriteStuff();
+
+    readOutObjectFileContents();
 
     while(running) {
         while (SDL_PollEvent(&event)) {
