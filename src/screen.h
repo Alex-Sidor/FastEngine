@@ -1,19 +1,25 @@
 #pragma once
 
-#include <SDL3/SDL.h>
+#include <cstdint>
 #include <stdexcept>
+#include <string>
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 class Screen {
 public:
     Screen(int x, int y);
-    void displayBuffer(Uint32* buffer);
+    ~Screen();
+
+    void displayBuffer(const uint32_t* buffer);
 
     std::string error;
 
 private:
     int width;
+    int height;
 
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
-    SDL_Texture* texture = nullptr;
+    GLFWwindow* window = nullptr;
+    GLuint texture = 0;
 };

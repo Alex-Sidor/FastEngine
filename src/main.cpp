@@ -21,7 +21,7 @@ class Camera {
 public:
     int WINDOW_WIDTH,WINDOW_HEIGHT;
 
-    Uint32* pixelBuffer;
+    uint32_t* pixelBuffer;
 
     float* pixelDepthBuffer;
 
@@ -44,7 +44,7 @@ public:
         bufferOffset = height;
         bufferSize = bufferOffset * 2;
 
-        pixelBuffer = new Uint32[amountOfPixels];   
+        pixelBuffer = new uint32_t[amountOfPixels];   
 
         pixelDepthBuffer = new float[amountOfPixels];   
     }
@@ -55,7 +55,11 @@ public:
     }
 
     void renderBuffer(){
-        SDL_memset4(pixelBuffer, 0x000000FF, amountOfPixels);//set screen to black
+        for (int i = 0; i < amountOfPixels; i++)
+        {
+            pixelBuffer[i] = 0x000000FF;
+        }
+
         memset(pixelDepthBuffer, 0, sizeof(float) * amountOfPixels);
 
         angle += 0.01;
@@ -75,16 +79,13 @@ public:
 
     void convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest){ 
         for(int i = 0;i < amountOfPixels; i++){
-            Uint8 singleChannelColour = static_cast<Uint8>(((lowest - pixelDepthBuffer[i]) / (highest-lowest))*255);
+            uint8_t singleChannelColour = static_cast<uint8_t>(((lowest - pixelDepthBuffer[i]) / (highest-lowest))*255);
 
             pixelBuffer[i] = (singleChannelColour << 24) + (singleChannelColour << 16) + (singleChannelColour << 8) + 255;
         }
     }
 
 private:
-    int* triangleBuffer;
-    vec3* triangleWeights;
-
     int halfWidth;
     int halfHeight;
     int amountOfPixels;
@@ -125,7 +126,7 @@ private:
                 pixelBuffer[p] = 255; //black (2^8)-1
             }*/
 
-            pixelBuffer[p] = ((static_cast<Uint8>(U*255) << 24) + (static_cast<Uint8>(V*255) << 16) + 255);
+            pixelBuffer[p] = ((static_cast<uint8_t>(U*255) << 24) + (static_cast<uint8_t>(V*255) << 16) + 255);
         } 
     }
 
@@ -157,8 +158,8 @@ private:
             return;
         }
         
-        vec2 edgeVector1 = (vec2){p1.x - p0.x,p1.y - p0.y};
-        vec2 edgeVector2 = (vec2){p2.x - p0.x,p2.y - p0.y};
+        vec2 edgeVector1 = {p1.x - p0.x,p1.y - p0.y};
+        vec2 edgeVector2 = {p2.x - p0.x,p2.y - p0.y};
 
         float fullArea = triangleArea({p0.x,p0.y},{p1.x,p1.y},{p2.x,p2.y});
 
@@ -212,13 +213,7 @@ private:
     }
 };
 
-void count(int*array,int size){
-    for(int i = 0; i< size; i++){
-        array[i] = i;
-    }
-}
-
-void readOutObjectFileContents(){
+/*void readOutObjectFileContents() {
     std::ifstream objectFile("assets/cube.obj");
 
     std::string contents;
@@ -237,9 +232,9 @@ void readOutObjectFileContents(){
     }
 
     objectFile.close();
-}
+}*/
 
-void readStuffAndWriteStuff(){
+void static readStuffAndWriteStuff(){
     using namespace std;
     
     ofstream MyWriteFile("assets/filename.txt");
@@ -259,14 +254,16 @@ void readStuffAndWriteStuff(){
     MyReadFile.close();
 }
 
+void static count(int* array, int size) {
+    for (int i = 0; i < size; i++) {
+        array[i] = i;
+    }
+}
+
 float avgFps = 0;
-Uint8 frameCount = 0;
+uint8_t frameCount = 0;
 
 int main(int argc, char* argv[]) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("Failed to init SDL: %s", SDL_GetError());
-        return 1;
-    }
 
     Screen screen(1000, 1000);
     Camera camera(1000, 1000,120,0.5);
@@ -274,7 +271,6 @@ int main(int argc, char* argv[]) {
     std::cout << screen.error << "\n";
 
     bool running = true;
-    SDL_Event event;
 
     int array[100];
 
@@ -282,18 +278,11 @@ int main(int argc, char* argv[]) {
     
     std::cout << array[69] << "\n";
 
-    int a;
-    std::cout << a << "\n";
-
     //readStuffAndWriteStuff();
 
-    readOutObjectFileContents();
+    //readOutObjectFileContents();
 
     while(running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT)
-                running = false;
-        }
         auto start = std::chrono::high_resolution_clock::now();
 
         camera.renderBuffer();
@@ -308,10 +297,9 @@ int main(int argc, char* argv[]) {
         screen.displayBuffer(camera.pixelBuffer);
 
         if((frameCount % 1000) == 0){
-            SDL_Log("f:%d", static_cast<int>(avgFps));
+            std::cout << avgFps << "\n";
         }
 
         frameCount ++;
     }
-    SDL_Quit();
 }

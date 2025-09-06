@@ -1,17 +1,21 @@
 cmake_minimum_required(VERSION 3.10)
-
 project(FastEngine)
 
-set(CMAKE_CXX_STANDARD 17)
+# Add GLAD
+add_library(glad STATIC deps/glad/src/glad.c)
+target_include_directories(glad PUBLIC deps/glad/include)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
+# Add GLFW
+add_subdirectory(deps/glfw)
 
-add_subdirectory(deps/SDL3 EXCLUDE_FROM_ALL)
+find_package(OpenGL REQUIRED)
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
+# Source files for your engine
 file(GLOB SOURCES "src/*.cpp")
-
 add_executable(FastEngine ${SOURCES})
 
-target_link_libraries(FastEngine PRIVATE SDL3::SDL3)
+# Includes for your engine
+target_include_directories(FastEngine PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+# Link everything
+target_link_libraries(FastEngine PRIVATE glad glfw OpenGL::GL)

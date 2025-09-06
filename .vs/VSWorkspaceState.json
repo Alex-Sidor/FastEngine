@@ -1,0 +1,17 @@
+{
+  "OutputFoldersPerTargetSystem": {
+    "Local Machine": [
+      "build\\x64-Debug",
+      "out\\install\\x64-Debug",
+      "build\\x64-Release",
+      "out\\install\\x64-Release"
+    ]
+  },
+  "ExpandedNodes": [
+    "",
+    "\\deps",
+    "\\deps\\glad",
+    "\\src"
+  ],
+  "PreviewInSolutionExplorer": false
+}
