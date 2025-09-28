@@ -19,8 +19,7 @@ git submodule update --init
 Create a build folder and build the project using CMake:
 
 ```bash
-mkdir build
-cmake -B build -S .
+cmake -B build
 cmake --build build
 ```
 
