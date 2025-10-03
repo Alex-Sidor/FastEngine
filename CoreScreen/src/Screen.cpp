@@ -1,4 +1,4 @@
-#include "screen.h"
+#include "Screen.h"
 #include <iostream>
 
 Screen::Screen(int x, int y) : width(x), height(y) {
@@ -47,8 +47,6 @@ Screen::~Screen() {
 }
 
 void Screen::displayBuffer(const uint32_t* buffer) {
-    if (glfwWindowShouldClose(window)) return;
-
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
         GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, buffer);

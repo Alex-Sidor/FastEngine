@@ -16,10 +16,11 @@ public:
 
     std::string error;
 
+    GLFWwindow* window = nullptr;
+
 private:
     int width;
     int height;
 
-    GLFWwindow* window = nullptr;
     GLuint texture = 0;
 };

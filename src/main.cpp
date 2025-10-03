@@ -1,5 +1,6 @@
-#include "screen.h"
+#include "Screen.h"
 #include "vector.h"
+#include <cstring>
 
 #include <iostream>
 #include <fstream>
@@ -261,7 +262,7 @@ void static count(int* array, int size) {
 }
 
 float avgFps = 0;
-uint8_t frameCount = 0;
+int frameCount = 1; //dont immediately print the current fps (has not been accumilated)
 
 int main(int argc, char* argv[]) {
 
@@ -270,19 +271,21 @@ int main(int argc, char* argv[]) {
 
     std::cout << screen.error << "\n";
 
-    bool running = true;
-
     int array[100];
 
     count(array, sizeof(array)/sizeof(int));
     
-    std::cout << array[69] << "\n";
+    std::cout << array[50] << "\n";
 
     //readStuffAndWriteStuff();
 
     //readOutObjectFileContents();
 
-    while(running) {
+    while(!glfwWindowShouldClose(screen.window)) {
+        if (glfwGetKey(screen.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(screen.window, GLFW_TRUE);
+        }
+        
         auto start = std::chrono::high_resolution_clock::now();
 
         camera.renderBuffer();
@@ -290,13 +293,13 @@ int main(int argc, char* argv[]) {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
         
-        avgFps = (avgFps * 0.99) + (10000/duration.count());
+        avgFps = (avgFps * 0.99) + (10000.0f/static_cast<float>(duration.count()));
         
         //camera.convertDepthIntoGrayscaleAndDisplayTobuffer(0,10);
 
         screen.displayBuffer(camera.pixelBuffer);
 
-        if((frameCount % 1000) == 0){
+        if((frameCount % 100) == 0){
             std::cout << avgFps << "\n";
         }
 
