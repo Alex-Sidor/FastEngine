@@ -5,13 +5,7 @@ FastEngine is a lightweight CPU-based renderer that performs rendering without e
 ## Clone Instructions
 
 ```bash
-git clone --recursive https://github.com/AlexSid0/FastEngine.git
-```
-
-If you cloned without `--recursive`, run:
-
-```bash
-git submodule update --init
+git clone https://github.com/Alex-Sidor/FastEngine.git
 ```
 
 ## Build & Run
@@ -20,7 +14,7 @@ Create a build folder and build the project using CMake:
 
 ```bash
 mkdir build
-cmake -B build -S .
+cmake -B build # -G "your generator"
 cmake --build build
 ```
 
