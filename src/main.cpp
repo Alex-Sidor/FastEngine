@@ -68,10 +68,8 @@ int frameCount = 1;
 
 int main(int argc, char* argv[]) {
 
-    Screen screen(1000, 1000);
+    Screen screen(1000, 1000,"thing");
     Camera camera(1000, 1000,120,0.5);
-
-    std::cout << screen.error << "\n";
 
     int array[100];
 
@@ -99,7 +97,8 @@ int main(int argc, char* argv[]) {
         
         //camera.convertDepthIntoGrayscaleAndDisplayTobuffer(0,7);
 
-        screen.displayBuffer(camera.pixelBuffer);
+        screen.setTexture(camera.pixelBuffer);
+        screen.updateScreen();
 
         if((frameCount % 10) == 0){
             std::cout << fps << "\n";

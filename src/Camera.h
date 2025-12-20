@@ -11,11 +11,13 @@
 
 #include "vector.h"
 
+#include "Screen.h"
+
 class Camera {
 public:
     int WINDOW_WIDTH,WINDOW_HEIGHT;
 
-    uint32_t* pixelBuffer;
+    pixel* pixelBuffer;
 
     float* pixelDepthBuffer;
 
@@ -39,7 +41,7 @@ private:
     float viewportScaleX;
     float viewportScaleY;
 
-    void projectVertex(vec3& original,vec3& transformed);
+    const void projectVertex(vec3& original,vec3& transformed);
 
     void rotateVector(vec3& original,vec3& tramsformed,vec3 pivot,float sin,float cos);
 

@@ -22,7 +22,7 @@ Camera::Camera(int width, int height,float fieldOfView, float scale){
     bufferOffset = height;
     bufferSize = bufferOffset * 2;
 
-    pixelBuffer = new uint32_t[amountOfPixels];   
+    pixelBuffer = new pixel[amountOfPixels];
 
     pixelDepthBuffer = new float[amountOfPixels];   
 }
@@ -35,7 +35,7 @@ Camera::~Camera(){
 void Camera::renderBuffer(){
     for (int i = 0; i < amountOfPixels; i++)
     {
-        pixelBuffer[i] = 0x000000FF;
+        pixelBuffer[i] = { 0, 0, 0 };
         pixelDepthBuffer[i] = 0;
     }
 
@@ -58,11 +58,11 @@ void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lo
     for(int i = 0;i < amountOfPixels; i++){
         uint8_t singleChannelColour = static_cast<uint8_t>(((lowest - pixelDepthBuffer[i]) / (highest-lowest))*255);
 
-        pixelBuffer[i] = (singleChannelColour << 24) + (singleChannelColour << 16) + (singleChannelColour << 8) + 255;
+        pixelBuffer[i] = { singleChannelColour,singleChannelColour,singleChannelColour };
     }
 }
 
-void Camera::projectVertex(vec3& original,vec3& transformed){
+const void Camera::projectVertex(vec3& original,vec3& transformed){
     transformed.x = (viewportScaleY * original.x / (original.z * fov)) + halfWidth;
     transformed.y = (viewportScaleY * original.y / (original.z * fov)) + halfHeight;
 }
@@ -93,7 +93,7 @@ void Camera::drawPixel(float w1, float w2, float w3,int x, int y,float u0invp0z,
             pixelBuffer[p] = 255; //black (2^8)-1
         }*/
 
-        pixelBuffer[p] = ((static_cast<uint8_t>(U*255) << 24) + (static_cast<uint8_t>(V*255) << 16) + 255);
+        pixelBuffer[p] = { static_cast<uint8_t>(U * 255),static_cast<uint8_t>(V * 255), 0 };
     } 
 }
 

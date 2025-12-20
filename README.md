@@ -25,11 +25,3 @@ If you have followed the steps above, running the program should be as simple as
 ```bash
 build/FastEngine (.exe)
 ```
-
-TODO:
-* Add model importing
-* Add texture support
-* Add shader support
-* Finish rotation class
-* Add parented rotation
-* Add Lighting

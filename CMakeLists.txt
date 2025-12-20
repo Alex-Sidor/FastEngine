@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(FastEngine)
 
 # Add Screen class
-add_subdirectory(CoreScreen)
+add_subdirectory(RenderSurface)
 
 # Source files for your engine
 file(GLOB SOURCES "src/*.cpp")
@@ -12,4 +12,4 @@ add_executable(FastEngine ${SOURCES})
 target_include_directories(FastEngine PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # Link everything
-target_link_libraries(FastEngine PRIVATE CoreScreen)
+target_link_libraries(FastEngine PRIVATE RenderSurface)
