@@ -8,10 +8,14 @@
 #include <cmath>
 #include <string>
 #include <math.h>
+#include <algorithm>
 
 #include "vector.h"
 
 #include "Screen.h"
+
+#include "object.h"
+
 
 class Camera {
 public:
@@ -28,7 +32,7 @@ public:
 
     ~Camera();
 
-    void renderBuffer();
+    void renderBuffer(objectLoader& objectHandler);
     void convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest);
 
 private:
@@ -57,5 +61,5 @@ private:
 
     inline float max3(float a, float b, float c);
 
-    void triangle(vec3 p0, vec3 p1, vec3 p2);
+    void drawTriangle(vec3 p0, vec3 p1, vec3 p2);
 };

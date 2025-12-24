@@ -32,14 +32,14 @@ Camera::~Camera(){
     delete[] pixelDepthBuffer;
 }
 
-void Camera::renderBuffer(){
+void Camera::renderBuffer(objectLoader& objectHandler){
     for (int i = 0; i < amountOfPixels; i++)
     {
         pixelBuffer[i] = { 0, 0, 0 };
         pixelDepthBuffer[i] = 0;
     }
 
-    angle += 0.01;
+    /*angle += 0.01;
     
     float s = sinf(angle);
     float c = cosf(angle);
@@ -47,10 +47,22 @@ void Camera::renderBuffer(){
     for(int i = 0; i < 5; i++){
         rotateVector(objectVertex[i],objectVertexBuffer[i],{0,0,3},s,c);
         projectVertex(objectVertexBuffer[i],objectVertexBuffer[i]);
-    }
+    }*/
 
-    for(int i = 0;i < 18; i+=3){
-        triangle(objectVertexBuffer[objectTriangleBuffer[i]],objectVertexBuffer[objectTriangleBuffer[i+1]],objectVertexBuffer[objectTriangleBuffer[i+2]]);
+    for (int i = 0; i < objectHandler.objectsToDestroy.size(); i++)
+    {
+        object currentObject = objectHandler.objectsToDestroy[i];
+
+        for (int t = 0; t < currentObject.Ntris; t++) {
+            
+            triangle currentTri = currentObject.triangles[t];
+
+            vec3 a = currentObject.verticies[currentTri.vertexA];
+            vec3 b = currentObject.verticies[currentTri.vertexB];
+            vec3 c = currentObject.verticies[currentTri.vertexC];
+
+            drawTriangle(a,b,c);
+        }
     }
 }
 
@@ -116,7 +128,7 @@ inline float Camera::max3(float a, float b, float c) {
     return m;
 }
 
-void Camera::triangle(vec3 p0, vec3 p1, vec3 p2) { 
+void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) { 
     
     const float epsilon = 0;//-1e-6f; //compensate for floating point error
 
@@ -130,7 +142,7 @@ void Camera::triangle(vec3 p0, vec3 p1, vec3 p2) {
 
     float fullArea = triangleArea({p0.x,p0.y},{p1.x,p1.y},{p2.x,p2.y});
 
-    if(fullArea >= 0){
+    if (fullArea >= 0) {
         return;//dont draw the triangle if its backface
     }
 
@@ -156,10 +168,11 @@ void Camera::triangle(vec3 p0, vec3 p1, vec3 p2) {
     float invp1z = 1/p1.z;
     float invp2z = 1/p2.z; // calculate inverses once and multiply to save on division clock cycles
 
-    int minX = static_cast<int>(std::floor(min3(p0.x,p1.x,p2.x)));
-    int minY = static_cast<int>(std::floor(min3(p0.y,p1.y,p2.y)));
-    int maxX = static_cast<int>(std::ceil(max3(p0.x,p1.x,p2.x)));
-    int maxY = static_cast<int>(std::ceil(max3(p0.y,p1.y,p2.y)));
+
+    int minX = std::max(0, (int)min3(p0.x, p1.x, p2.x));
+    int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
+    int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
+    int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
 
     for(int y = minY; y <  maxY; y++){
         for(int x = minX; x < maxX; x++){
