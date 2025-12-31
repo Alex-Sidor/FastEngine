@@ -18,7 +18,7 @@ struct triangle {
 	int vertexC;
 };
 
-struct object {
+struct Mesh {
 	vec3* verticies = nullptr;
 	triangle* triangles = nullptr;
 
@@ -26,14 +26,14 @@ struct object {
 	int Ntris;
 };
 
-class objectLoader {
+class MeshLoader {
 public:
 
-	object loadObject(char* path);
+	object loadMesh(char* path);
 
-	~objectLoader();
+	~MeshLoader();
 
-	std::vector<object> objectsToDestroy;
+	std::vector<object> LoadedMeshes;
 
 private:
 };

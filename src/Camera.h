@@ -47,7 +47,7 @@ private:
 
     const void projectVertex(vec3& original,vec3& transformed);
 
-    void rotateVector(vec3& original,vec3& tramsformed,vec3 pivot,float sin,float cos);
+    void rotateVector(vec2& original, vec2& tramsformed, vec2 pivot, float sin, float cos);
 
     void drawPixel(float w1, float w2, float w3,
         int x, int y,

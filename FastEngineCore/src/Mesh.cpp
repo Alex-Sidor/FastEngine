@@ -1,6 +1,6 @@
-#include "object.h"
+#include "Mesh.h"
 
-object objectLoader::loadObject(char* path)
+Mesh MeshLoader::loadMesh(char* path)
 {
 	using namespace std;
 
@@ -8,16 +8,15 @@ object objectLoader::loadObject(char* path)
 	vector<vec3> verticiesAcc;
 	vector<triangle> trianglesAcc;
 
-	ifstream objectFile(path);
+	ifstream MeshFile(path);
 
-	if (!objectFile.is_open()) {
+	if (!MeshFile.is_open()) {
 		printf("Could not open file: %s\n", path);
 		throw std::runtime_error("Could not open file: " + std::string(path));
 	}
 
-
 	std::string line;
-	while (std::getline(objectFile, line)) {
+	while (std::getline(MeshFile, line)) {
 		std::stringstream current(line);
 		std::string type;
 
@@ -39,6 +38,7 @@ object objectLoader::loadObject(char* path)
 			trianglesAcc.push_back( triangle{ stoi(a)-1, stoi(b)-1, stoi(c)-1 });
 		}
 	}
+	MeshFile.close();
 
 	vec3* verticies = new vec3[verticiesAcc.size()];
 	triangle* triangles = new triangle[trianglesAcc.size()];
@@ -46,15 +46,14 @@ object objectLoader::loadObject(char* path)
 	copy(verticiesAcc.begin(), verticiesAcc.end(), verticies);
 	copy(trianglesAcc.begin(), trianglesAcc.end(), triangles);
 
-	object current ={ verticies, triangles, verticiesAcc.size() ,trianglesAcc.size() };
+	Mesh current ={ verticies, triangles, verticiesAcc.size() ,trianglesAcc.size() };
 
-	objectsToDestroy.push_back(current);
-	objectFile.close();
+	LoadedMeshes.push_back(current);
 
 	return current;
 }
 
-objectLoader::~objectLoader()
+MeshLoader::~MeshLoader()
 {
 	for (int i = 0; i < objectsToDestroy.size(); i++)
 	{

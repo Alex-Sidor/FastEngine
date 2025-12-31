@@ -27,6 +27,7 @@ Camera::~Camera(){
 }
 
 void Camera::renderBuffer(objectLoader& objectHandler){
+
     for (int i = 0; i < amountOfPixels; i++)
     {
         pixelBuffer[i] = { 0, 0, 0 };
@@ -52,7 +53,7 @@ void Camera::renderBuffer(objectLoader& objectHandler){
 
 void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest){ 
     for(int i = 0;i < amountOfPixels; i++){
-        uint8_t singleChannelColour = static_cast<uint8_t>(((lowest - pixelDepthBuffer[i]) / (highest-lowest))*255);
+        uint8_t singleChannelColour = 255 * (lowest - pixelDepthBuffer[i]) / highest-lowest;
 
         pixelBuffer[i] = { singleChannelColour,singleChannelColour,singleChannelColour };
     }
@@ -63,13 +64,12 @@ const void Camera::projectVertex(vec3& original,vec3& transformed){
     transformed.y = (viewportScaleY * original.y / (original.z * fov)) + halfHeight;
 }
 
-void Camera::rotateVector(vec3& original,vec3& tramsformed,vec3 pivot,float sin,float cos){
-    float newX = original.x-pivot.x;
-    float newZ = original.z-pivot.z;
+void Camera::rotateVector(vec2& original,vec2& tramsformed,vec2 pivot,float sin,float cos){
+    tramsformed.x = original.x-pivot.x;
+    tramsformed.y = original.y-pivot.y;
 
-    tramsformed.x = ((newX*cos)-(newZ*sin))+pivot.x;
-    tramsformed.y = original.y;
-    tramsformed.z = ((newX*sin)+(newZ*cos))+pivot.z;
+    tramsformed.x = ((tramsformed.x *cos)-(tramsformed.y *sin))+pivot.x;
+    tramsformed.y = ((tramsformed.x *sin)+(tramsformed.y *cos))+pivot.y;
 }
 
 void Camera::drawPixel(float w1, float w2, float w3,int x, int y,float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z){//temporary
@@ -96,18 +96,18 @@ void Camera::drawPixel(float w1, float w2, float w3,int x, int y,float u0invp0z,
 }
 
 
-inline float Camera::triangleArea(const vec2& a, const vec2& b, const vec2& c) {
+float Camera::triangleArea(const vec2& a, const vec2& b, const vec2& c) {
     return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
 }
 
-inline float Camera::min3(float a, float b, float c) {
+float Camera::min3(float a, float b, float c) {
     float m = a;
     if (b < m) m = b;
     if (c < m) m = c;
     return m;
 }
 
-inline float Camera::max3(float a, float b, float c) {
+float Camera::max3(float a, float b, float c) {
     float m = a;
     if (b > m) m = b;
     if (c > m) m = c;
@@ -160,8 +160,6 @@ void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) {
     int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
     int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
     int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
-
-    printf("%d %d %d %d\n", minX, minY, maxX, maxY);
 
     for(int y = minY; y <  maxY; y++){
         for(int x = minX; x < maxX; x++){
