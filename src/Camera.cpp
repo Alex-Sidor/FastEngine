@@ -1,11 +1,5 @@
 #include "Camera.h"
 
-vec3 objectVertexBuffer[5];
-
-int objectTriangleBuffer[18] = {0,1,4,0,1,2,3,2,1,3,2,4,0,4,2,1,3,4};
-
-vec3 objectVertex[5] = {{-1,1,2},{1,1,2},{-1,1,4},{1,1,4},{0,-1,3}};
-
 Camera::Camera(int width, int height,float fieldOfView, float scale){
     WINDOW_WIDTH = width;
     WINDOW_HEIGHT = height;
@@ -16,7 +10,7 @@ Camera::Camera(int width, int height,float fieldOfView, float scale){
     fov = tanf(fieldOfView/2)*2;
     
     viewportScaleX = (halfWidth * scale) / fov;        
-    viewportScaleY = (halfHeight * scale) / fov;
+    viewportScaleY = -(halfHeight * scale) / fov;//flipped y axis (buffers are stored from top left pixels)
 
     amountOfPixels = width * height;
     bufferOffset = height;
@@ -38,16 +32,6 @@ void Camera::renderBuffer(objectLoader& objectHandler){
         pixelBuffer[i] = { 0, 0, 0 };
         pixelDepthBuffer[i] = 0;
     }
-
-    /*angle += 0.01;
-    
-    float s = sinf(angle);
-    float c = cosf(angle);
-
-    for(int i = 0; i < 5; i++){
-        rotateVector(objectVertex[i],objectVertexBuffer[i],{0,0,3},s,c);
-        projectVertex(objectVertexBuffer[i],objectVertexBuffer[i]);
-    }*/
 
     for (int i = 0; i < objectHandler.objectsToDestroy.size(); i++)
     {
@@ -75,7 +59,7 @@ void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lo
 }
 
 const void Camera::projectVertex(vec3& original,vec3& transformed){
-    transformed.x = (viewportScaleY * original.x / (original.z * fov)) + halfWidth;
+    transformed.x = (viewportScaleX * original.x / (original.z * fov)) + halfWidth;
     transformed.y = (viewportScaleY * original.y / (original.z * fov)) + halfHeight;
 }
 
@@ -93,17 +77,19 @@ void Camera::drawPixel(float w1, float w2, float w3,int x, int y,float u0invp0z,
 
     int p = x + (y*WINDOW_WIDTH);
 
-    if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0){
+    //pixelBuffer[p] = { 255,255,255 };
+
+    if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0) {
         pixelDepthBuffer[p] = pixelZ;
         
         float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
         float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
         
-        /*if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
-            pixelBuffer[p] = 4294967295; //white (2^32)-1
+        if(((static_cast<int>(V*10)-static_cast<int>(U*10)) & 1) == 0){
+            pixelBuffer[p] = {255,255,255}; // white
         }else{
-            pixelBuffer[p] = 255; //black (2^8)-1
-        }*/
+            pixelBuffer[p] = { 0,0,0 };// black
+        }
 
         pixelBuffer[p] = { static_cast<uint8_t>(U * 255),static_cast<uint8_t>(V * 255), 0 };
     } 
@@ -136,10 +122,12 @@ void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) {
         std::cout << "triangle behind viewport deleted\n";
         return;
     }
-    
-    vec2 edgeVector1 = {p1.x - p0.x,p1.y - p0.y};
-    vec2 edgeVector2 = {p2.x - p0.x,p2.y - p0.y};
 
+    projectVertex(p0, p0);
+    projectVertex(p1, p1);
+    projectVertex(p2, p2);
+
+    
     float fullArea = triangleArea({p0.x,p0.y},{p1.x,p1.y},{p2.x,p2.y});
 
     if (fullArea >= 0) {
@@ -168,11 +156,12 @@ void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) {
     float invp1z = 1/p1.z;
     float invp2z = 1/p2.z; // calculate inverses once and multiply to save on division clock cycles
 
-
     int minX = std::max(0, (int)min3(p0.x, p1.x, p2.x));
     int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
     int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
     int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
+
+    printf("%d %d %d %d\n", minX, minY, maxX, maxY);
 
     for(int y = minY; y <  maxY; y++){
         for(int x = minX; x < maxX; x++){
@@ -184,8 +173,6 @@ void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) {
             
             float w3 = (1.0f - w1) - w2;
             if(w3 < epsilon) continue;
-            
-            //pixelBuffer[x+(WINDOW_WIDTH*y)] = 4294967295;
 
             drawPixel(w1,w2,w3,x,y,u0invp0z,u1invp1z,u2invp2z,v0invp0z,v1invp1z,v2invp2z,invp0z,invp1z,invp2z);
         }
