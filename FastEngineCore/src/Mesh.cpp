@@ -1,14 +1,5 @@
 #include "Mesh.h"
 
-MeshLoader::~MeshLoader()
-{
-	for (int i = 0; i < objectsToDestroy.size(); i++)
-	{
-		delete[] (objectsToDestroy[i].verticies);
-		delete[] (objectsToDestroy[i].triangles);
-	}
-}
-
 Mesh::~Mesh()
 {
 	if (verticies) {
