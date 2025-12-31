@@ -13,7 +13,7 @@
 #include "Screen.h"
 #include "vector.h"
 #include "Camera.h"
-#include "object.h"
+#include "Mesh.h"
 
 float fps = 0;
 int frameCount = 1;
@@ -23,9 +23,7 @@ int main(int argc, char* argv[]) {
     Screen screen(1000, 1000,"Cpu renderer");
     Camera camera(1000, 1000,120,0.5);
 
-    objectLoader objectHandler;
-
-    objectHandler.loadObject("../../../assets/cube.obj");
+    Mesh triangle = Engine::Mesh::loadMesh("../../../assets/cube.obj");
 
     while(!glfwWindowShouldClose(screen.window)) {
         if (glfwGetKey(screen.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {

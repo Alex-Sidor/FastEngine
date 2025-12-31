@@ -42,9 +42,9 @@ void Camera::renderBuffer(objectLoader& objectHandler){
             
             triangle currentTri = currentObject.triangles[t];
 
-            vec3 a = currentObject.verticies[currentTri.vertexA];
-            vec3 b = currentObject.verticies[currentTri.vertexB];
-            vec3 c = currentObject.verticies[currentTri.vertexC];
+            Vec3 a = currentObject.verticies[currentTri.vertexA];
+            Vec3 b = currentObject.verticies[currentTri.vertexB];
+            Vec3 c = currentObject.verticies[currentTri.vertexC];
 
             drawTriangle(a,b,c);
         }
@@ -59,12 +59,12 @@ void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lo
     }
 }
 
-const void Camera::projectVertex(vec3& original,vec3& transformed){
+const void Camera::projectVertex(Vec3& original,Vec3& transformed){
     transformed.x = (viewportScaleX * original.x / (original.z * fov)) + halfWidth;
     transformed.y = (viewportScaleY * original.y / (original.z * fov)) + halfHeight;
 }
 
-void Camera::rotateVector(vec2& original,vec2& tramsformed,vec2 pivot,float sin,float cos){
+void Camera::rotateVector(Vec2& original,Vec2& tramsformed,Vec2 pivot,float sin,float cos){
     tramsformed.x = original.x-pivot.x;
     tramsformed.y = original.y-pivot.y;
 
@@ -96,7 +96,7 @@ void Camera::drawPixel(float w1, float w2, float w3,int x, int y,float u0invp0z,
 }
 
 
-float Camera::triangleArea(const vec2& a, const vec2& b, const vec2& c) {
+float Camera::triangleArea(const Vec2& a, const Vec2& b, const Vec2& c) {
     return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
 }
 
@@ -114,7 +114,7 @@ float Camera::max3(float a, float b, float c) {
     return m;
 }
 
-void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) { 
+void Camera::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) { 
     
     const float epsilon = 0;//-1e-6f; //compensate for floating point error
 

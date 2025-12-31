@@ -45,9 +45,9 @@ private:
     float viewportScaleX;
     float viewportScaleY;
 
-    const void projectVertex(vec3& original,vec3& transformed);
+    const void projectVertex(Vec3& original,Vec3& transformed);
 
-    void rotateVector(vec2& original, vec2& tramsformed, vec2 pivot, float sin, float cos);
+    void rotateVector(Vec2& original, Vec2& tramsformed, Vec2 pivot, float sin, float cos);
 
     void drawPixel(float w1, float w2, float w3,
         int x, int y,
@@ -55,11 +55,11 @@ private:
         float v0invp0z, float v1invp1z, float v2invp2z,
         float invp0z, float invp1z, float invp2z);
 
-    inline float triangleArea(const vec2& a, const vec2& b, const vec2& c);
+    inline float triangleArea(const Vec2& a, const Vec2& b, const Vec2& c);
 
     inline float min3(float a, float b, float c);
 
     inline float max3(float a, float b, float c);
 
-    void drawTriangle(vec3 p0, vec3 p1, vec3 p2);
+    void drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2);
 };

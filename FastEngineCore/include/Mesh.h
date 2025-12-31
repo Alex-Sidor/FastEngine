@@ -17,7 +17,7 @@ public:
 
 	~Mesh();
 
-	vec3* verticies = nullptr;
+	Vec3* verticies = nullptr;
 	triangle* triangles = nullptr;
 
 	int sizeVerts;

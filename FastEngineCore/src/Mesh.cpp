@@ -16,7 +16,7 @@ Mesh Engine::Mesh::loadMesh(char* path)
 	using namespace std;
 
 	//accumulate the tris and verts while reading then put into a set size arr
-	vector<vec3> verticiesAcc;
+	vector<Vec3> verticiesAcc;
 	vector<triangle> trianglesAcc;
 
 	ifstream MeshFile(path);
@@ -39,7 +39,7 @@ Mesh Engine::Mesh::loadMesh(char* path)
 
 			current >> a >> b >> c;
 
-			verticiesAcc.push_back(vec3{ stof(a), stof(b), stof(c) });
+			verticiesAcc.push_back(Vec3{ stof(a), stof(b), stof(c) });
 		}
 		else if (type == "f") {
 			std::string a, b, c;
@@ -51,7 +51,7 @@ Mesh Engine::Mesh::loadMesh(char* path)
 	}
 	MeshFile.close();
 
-	vec3* verticies = new vec3[verticiesAcc.size()];
+	Vec3* verticies = new Vec3[verticiesAcc.size()];
 	triangle* triangles = new triangle[trianglesAcc.size()];
 
 	copy(verticiesAcc.begin(), verticiesAcc.end(), verticies);
