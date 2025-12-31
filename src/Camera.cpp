@@ -130,7 +130,7 @@ void Camera::drawTriangle(vec3 p0, vec3 p1, vec3 p2) {
     
     float fullArea = triangleArea({p0.x,p0.y},{p1.x,p1.y},{p2.x,p2.y});
 
-    if (fullArea >= 0) {
+    if (fullArea <= epsilon) {
         return;//dont draw the triangle if its backface
     }
 
