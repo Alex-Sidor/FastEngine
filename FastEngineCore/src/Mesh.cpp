@@ -1,6 +1,26 @@
 #include "Mesh.h"
 
-Mesh MeshLoader::loadMesh(char* path)
+MeshLoader::~MeshLoader()
+{
+	for (int i = 0; i < objectsToDestroy.size(); i++)
+	{
+		delete[] (objectsToDestroy[i].verticies);
+		delete[] (objectsToDestroy[i].triangles);
+	}
+}
+
+Mesh::~Mesh()
+{
+	if (verticies) {
+		delete[] verticies;
+	}
+
+	if (triangles) {
+		delete[] triangles;
+	}
+}
+
+Mesh Engine::Mesh::loadMesh(char* path)
 {
 	using namespace std;
 
@@ -23,7 +43,7 @@ Mesh MeshLoader::loadMesh(char* path)
 		if (!(current >> type)) continue;
 
 		if (type == "v") {
-			
+
 			std::string a, b, c;
 
 			current >> a >> b >> c;
@@ -35,7 +55,7 @@ Mesh MeshLoader::loadMesh(char* path)
 
 			current >> a >> b >> c;
 
-			trianglesAcc.push_back( triangle{ stoi(a)-1, stoi(b)-1, stoi(c)-1 });
+			trianglesAcc.push_back(triangle{ stoi(a) - 1, stoi(b) - 1, stoi(c) - 1 });
 		}
 	}
 	MeshFile.close();
@@ -46,18 +66,9 @@ Mesh MeshLoader::loadMesh(char* path)
 	copy(verticiesAcc.begin(), verticiesAcc.end(), verticies);
 	copy(trianglesAcc.begin(), trianglesAcc.end(), triangles);
 
-	Mesh current ={ verticies, triangles, verticiesAcc.size() ,trianglesAcc.size() };
+	Mesh current = { verticies, triangles, verticiesAcc.size() ,trianglesAcc.size() };
 
 	LoadedMeshes.push_back(current);
 
 	return current;
-}
-
-MeshLoader::~MeshLoader()
-{
-	for (int i = 0; i < objectsToDestroy.size(); i++)
-	{
-		delete[] (objectsToDestroy[i].verticies);
-		delete[] (objectsToDestroy[i].triangles);
-	}
 }

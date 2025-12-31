@@ -12,28 +12,19 @@
 
 #include <algorithm>
 
-struct triangle {
-	int vertexA;
-	int vertexB;
-	int vertexC;
-};
+class Mesh {
+public:
 
-struct Mesh {
+	~Mesh();
+
 	vec3* verticies = nullptr;
 	triangle* triangles = nullptr;
 
-	int Nvets;
-	int Ntris;
+	int sizeVerts;
+	int sizeTris;
+
 };
 
-class MeshLoader {
-public:
-
-	object loadMesh(char* path);
-
-	~MeshLoader();
-
-	std::vector<object> LoadedMeshes;
-
-private:
-};
+namespace Engine::Mesh {
+	void loadMesh(char* path);
+}
