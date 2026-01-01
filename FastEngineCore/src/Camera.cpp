@@ -1,47 +1,54 @@
 #include "Camera.h"
 
 Camera::Camera(int width, int height,float fieldOfView, const char* windowName){
-    raster(width, height, feildOfView);
+    raster = new TriangleRaster(width, height, fieldOfView);
 
-    screen(width, height, windowName);
+    screen = new Screen(width, height, windowName);
 }
 
 Camera::~Camera() {
-
+    if (!raster) {
+        delete raster;
+    }
+    if (!screen) {
+        delete screen;
+    }
 }
 
 void Camera::displayBuffer()
 {
-    screen.setTexture(raster.pixelBuffer);
+    screen->setTexture(raster->pixelBuffer);
 
-    screen.updateScreen();
+    screen->updateScreen();
+}
+
+GLFWwindow* Camera::getWindow()
+{
+    if (screen) {
+        return screen->window;
+    }
+    return nullptr;
 }
 
 void Camera::renderMesh(Mesh& mesh){
 
-    for (int t = 0; t < mesh.sizeTris; t++) {
+    if (raster) {
+        for (int t = 0; t < mesh.sizeTris; t++) {
             
-        Triangle currentTri = mesh[t];
+            Triangle currentTri = mesh.triangles[t];
 
-        Vec3 a = mesh.verticies[currentTri.vertexA];
-        Vec3 b = mesh.verticies[currentTri.vertexB];
-        Vec3 c = mesh.verticies[currentTri.vertexC];
+            Vec3 a = mesh.verticies[currentTri.vertexA];
+            Vec3 b = mesh.verticies[currentTri.vertexB];
+            Vec3 c = mesh.verticies[currentTri.vertexC];
 
-        drawTriangle(a,b,c);
+            raster->drawTriangle(a,b,c);
+        }
     }
 }
 
 void Camera::clearBuffers()
 {
-    raster.clearBuffers();
-}
-
-void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest){ 
-    for(int i = 0;i < amountOfPixels; i++){
-        uint8_t singleChannelColour = 255 * (lowest - pixelDepthBuffer[i]) / highest-lowest;
-
-        pixelBuffer[i] = { singleChannelColour,singleChannelColour,singleChannelColour };
-    }
+    raster->clearBuffers();
 }
 
 void Camera::rotateVector(Vec2& original,Vec2& tramsformed,Vec2 pivot,float sin,float cos){

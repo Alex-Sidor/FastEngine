@@ -11,6 +11,8 @@
 
 #include "Vector.h"
 
+#include "Screen.h"
+
 class TriangleRaster {
 public:
     

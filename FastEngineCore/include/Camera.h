@@ -8,7 +8,6 @@
 #include <cmath>
 #include <string>
 #include <math.h>
-#include <algorithm>
 
 #include "Vector.h"
 
@@ -20,7 +19,6 @@
 
 class Camera {
 public:
-    Screen screen;
 
     Camera(int width, int height,float fieldOfView, const char* windowName);
     ~Camera();
@@ -31,11 +29,12 @@ public:
 
     void displayBuffer();
 
-    void convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest);
+    GLFWwindow* getWindow();
 
 private:
 
-    TriangleRaster raster;
+    Screen* screen = nullptr;
+    TriangleRaster* raster = nullptr;
 
     void rotateVector(Vec2& original, Vec2& tramsformed, Vec2 pivot, float sin, float cos);
 };

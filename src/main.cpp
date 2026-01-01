@@ -23,9 +23,9 @@ int main(int argc, char* argv[]) {
 
     Mesh triangle = Components::loadMesh("../../../assets/cube.obj");
 
-    while(!glfwWindowShouldClose(camera.screen.window)) {
-        if (glfwGetKey(camera.screen.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(camera.screen.window, GLFW_TRUE);
+    while(!glfwWindowShouldClose(camera.getWindow())) {
+        if (glfwGetKey(camera.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(camera.getWindow(), GLFW_TRUE);
         }
         
         auto start = std::chrono::high_resolution_clock::now();
@@ -38,8 +38,6 @@ int main(int argc, char* argv[]) {
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
         
         fps = 1000000.0f / static_cast<float>(duration.count());
-        
-        //camera.convertDepthIntoGrayscaleAndDisplayTobuffer(0,7);
 
         camera.displayBuffer();
 

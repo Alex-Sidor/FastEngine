@@ -1,11 +1,5 @@
 #include "TriangleRaster.h"
 
-struct pixel {//temporary
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
-
 TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
 {
     WINDOW_WIDTH = width;
@@ -70,8 +64,8 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
 }
 
 void TriangleRaster::projectVertex(Vec3& vertex) {
-    vertex.x = (viewportScaleX * vertex.x / (vertex.z * fov)) + halfWidth;
-    vertex.y = (viewportScaleY * vertex.y / (vertex.z * fov)) + halfHeight;
+    vertex.x = (viewportScaleX * vertex.x / (vertex.z)) + halfWidth;
+    vertex.y = (viewportScaleY * vertex.y / (vertex.z)) + halfHeight;
 }
 
 float TriangleRaster::triangleArea(const Vec2& a, const Vec2& b, const Vec2& c) {
