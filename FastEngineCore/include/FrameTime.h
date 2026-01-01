@@ -1,10 +1,12 @@
 #pragma once
 
+
 #include <chrono>
 
 namespace Helpers {
 	float getFrameRate() {
-        static auto last;
+        static std::chrono::steady_clock::time_point last;
+
         auto current = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(current - last);
