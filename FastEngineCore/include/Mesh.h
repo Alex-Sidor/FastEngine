@@ -31,6 +31,6 @@ public:
 
 };
 
-namespace Engine::Mesh {
-	void loadMesh(char* path);
+namespace Components {
+	Mesh loadMesh(char* path);
 }

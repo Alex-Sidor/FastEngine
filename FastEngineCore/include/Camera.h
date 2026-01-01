@@ -16,6 +16,7 @@
 
 #include "Mesh.h"
 
+#include "TriangleRaster.h"
 
 class Camera {
 public:
@@ -29,8 +30,6 @@ public:
     float fov;
 
     Camera(int width, int height,float fieldOfView, float scale);
-
-    ~Camera();
 
     void renderMesh(Mesh& mesh);
 

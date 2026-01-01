@@ -1,5 +1,32 @@
 #include "TriangleRaster.h"
 
+TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
+{
+    WINDOW_WIDTH = width;
+    WINDOW_HEIGHT = height;
+
+    halfWidth = width / 2;
+    halfHeight = height / 2;
+
+    fov = tanf(fieldOfView / 2) * 2;
+
+    viewportScaleX = (halfWidth) / fov;
+    viewportScaleY = -(halfHeight) / fov;//flipped y axis (buffers are stored from top left pixels)
+
+    amountOfPixels = width * height;
+    bufferOffset = height;
+    bufferSize = bufferOffset * 2;
+
+    pixelBuffer = new pixel[amountOfPixels];
+    pixelDepthBuffer = new float[amountOfPixels];
+}
+
+TriangleRaster::~TriangleRaster()
+{
+    delete[] pixelBuffer;
+    delete[] pixelDepthBuffer;
+}
+
 void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z) {//temporary
     float pixelZ = 1 / ((w1 * invp0z) + (w2 * invp1z) + (w3 * invp2z));
 
@@ -24,6 +51,10 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
     }
 }
 
+void TriangleRaster::projectVertex(Vec3& vertex) {
+    vertex.x = (viewportScaleX * vertex.x / (vertex.z * fov)) + halfWidth;
+    vertex.y = (viewportScaleY * vertex.y / (vertex.z * fov)) + halfHeight;
+}
 
 float TriangleRaster::triangleArea(const Vec2& a, const Vec2& b, const Vec2& c) {
     return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);

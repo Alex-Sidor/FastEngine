@@ -11,13 +11,13 @@ Mesh::~Mesh()
 	}
 }
 
-Mesh Engine::Mesh::loadMesh(char* path)
+Mesh Components::loadMesh(char* path)
 {
 	using namespace std;
 
 	//accumulate the tris and verts while reading then put into a set size arr
 	vector<Vec3> verticiesAcc;
-	vector<triangle> trianglesAcc;
+	vector<Triangle> trianglesAcc;
 
 	ifstream MeshFile(path);
 
@@ -46,20 +46,18 @@ Mesh Engine::Mesh::loadMesh(char* path)
 
 			current >> a >> b >> c;
 
-			trianglesAcc.push_back(triangle{ stoi(a) - 1, stoi(b) - 1, stoi(c) - 1 });
+			trianglesAcc.push_back((Triangle){ stoi(a) - 1, stoi(b) - 1, stoi(c) - 1 });
 		}
 	}
 	MeshFile.close();
 
 	Vec3* verticies = new Vec3[verticiesAcc.size()];
-	triangle* triangles = new triangle[trianglesAcc.size()];
+	Triangle* triangles = new Triangle[trianglesAcc.size()];
 
 	copy(verticiesAcc.begin(), verticiesAcc.end(), verticies);
 	copy(trianglesAcc.begin(), trianglesAcc.end(), triangles);
 
 	Mesh current = { verticies, triangles, verticiesAcc.size() ,trianglesAcc.size() };
-
-	LoadedMeshes.push_back(current);
 
 	return current;
 }

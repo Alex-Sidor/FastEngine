@@ -1,29 +1,7 @@
 #include "Camera.h"
 
 Camera::Camera(int width, int height,float fieldOfView, float scale){
-    WINDOW_WIDTH = width;
-    WINDOW_HEIGHT = height;
 
-    halfWidth = width/2;
-    halfHeight = height/2;
-    
-    fov = tanf(fieldOfView/2)*2;
-    
-    viewportScaleX = (halfWidth * scale) / fov;        
-    viewportScaleY = -(halfHeight * scale) / fov;//flipped y axis (buffers are stored from top left pixels)
-
-    amountOfPixels = width * height;
-    bufferOffset = height;
-    bufferSize = bufferOffset * 2;
-
-    pixelBuffer = new pixel[amountOfPixels];
-
-    pixelDepthBuffer = new float[amountOfPixels];   
-}
-
-Camera::~Camera(){
-    delete[] pixelBuffer;
-    delete[] pixelDepthBuffer;
 }
 
 void Camera::renderMesh(Mesh& mesh){
@@ -55,11 +33,6 @@ void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lo
 
         pixelBuffer[i] = { singleChannelColour,singleChannelColour,singleChannelColour };
     }
-}
-
-const void Camera::projectVertex(Vec3& original,Vec3& transformed){
-    transformed.x = (viewportScaleX * original.x / (original.z * fov)) + halfWidth;
-    transformed.y = (viewportScaleY * original.y / (original.z * fov)) + halfHeight;
 }
 
 void Camera::rotateVector(Vec2& original,Vec2& tramsformed,Vec2 pivot,float sin,float cos){
