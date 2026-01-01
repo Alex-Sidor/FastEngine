@@ -32,5 +32,5 @@ public:
 };
 
 namespace Components {
-	Mesh loadMesh(char* path);
+	Mesh loadMesh(const char* path);
 }

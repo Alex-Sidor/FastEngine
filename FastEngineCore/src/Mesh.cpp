@@ -11,7 +11,7 @@ Mesh::~Mesh()
 	}
 }
 
-Mesh Components::loadMesh(char* path)
+Mesh Components::loadMesh(const char* path)
 {
 	using namespace std;
 
