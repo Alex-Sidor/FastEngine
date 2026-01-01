@@ -1,17 +1,37 @@
 #include "Mesh.h"
+#include "Mesh.h"
+#include "Mesh.h"
+
+Mesh::Mesh()
+{
+	verticies = nullptr;
+	triangles = nullptr;
+	sizeVerts = 0;
+	sizeTris = 0;
+}
 
 Mesh::~Mesh()
 {
+	clearData();
+}
+
+void Mesh::clearData()
+{
 	if (verticies) {
 		delete[] verticies;
+		verticies = nullptr;
 	}
 
 	if (triangles) {
 		delete[] triangles;
+		triangles = nullptr;
 	}
+
+	sizeVerts = 0;
+	sizeTris = 0;
 }
 
-Mesh Components::loadMesh(const char* path)
+void Components::loadMesh(const char* path, Mesh& meshComponent)
 {
 	using namespace std;
 
@@ -57,7 +77,10 @@ Mesh Components::loadMesh(const char* path)
 	copy(verticiesAcc.begin(), verticiesAcc.end(), verticies);
 	copy(trianglesAcc.begin(), trianglesAcc.end(), triangles);
 
-	Mesh current = { verticies, triangles, verticiesAcc.size() ,trianglesAcc.size() };
+	meshComponent.clearData();
 
-	return current;
+	meshComponent.verticies = verticies;
+	meshComponent.triangles = triangles;
+	meshComponent.sizeVerts = verticiesAcc.size();
+	meshComponent.sizeTris = trianglesAcc.size();
 }

@@ -32,6 +32,11 @@ GLFWwindow* Camera::getWindow()
 
 void Camera::renderMesh(Mesh& mesh){
 
+    if (!(mesh.triangles && mesh.verticies)) {
+        std::cout << "Empty mesh rendered\n";
+        return;
+    }
+
     if (raster) {
         for (int t = 0; t < mesh.sizeTris; t++) {
             

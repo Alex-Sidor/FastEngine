@@ -20,11 +20,13 @@ struct Triangle {
 
 class Mesh {
 public:
-
+	Mesh();
 	~Mesh();
 
-	Vec3* verticies = nullptr;
-	Triangle* triangles = nullptr;
+	void clearData();
+
+	Vec3* verticies;
+	Triangle* triangles;
 
 	int sizeVerts;
 	int sizeTris;
@@ -32,5 +34,5 @@ public:
 };
 
 namespace Components {
-	Mesh loadMesh(const char* path);
+	void loadMesh(const char* path, Mesh& meshComponent);
 }
