@@ -1,0 +1,107 @@
+#include "TriangleRaster.h"
+
+void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z) {//temporary
+    float pixelZ = 1 / ((w1 * invp0z) + (w2 * invp1z) + (w3 * invp2z));
+
+    int p = x + (y * WINDOW_WIDTH);
+
+    //pixelBuffer[p] = { 255,255,255 };
+
+    if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0) {
+        pixelDepthBuffer[p] = pixelZ;
+
+        float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
+        float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
+
+        if (((static_cast<int>(V * 10) - static_cast<int>(U * 10)) & 1) == 0) {
+            pixelBuffer[p] = { 255,255,255 }; // white
+        }
+        else {
+            pixelBuffer[p] = { 0,0,0 };// black
+        }
+
+        pixelBuffer[p] = { static_cast<uint8_t>(U * 255),static_cast<uint8_t>(V * 255), 0 };
+    }
+}
+
+
+float TriangleRaster::triangleArea(const Vec2& a, const Vec2& b, const Vec2& c) {
+    return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+}
+
+float TriangleRaster::min3(float a, float b, float c) {
+    float m = a;
+    if (b < m) m = b;
+    if (c < m) m = c;
+    return m;
+}
+
+float TriangleRaster::max3(float a, float b, float c) {
+    float m = a;
+    if (b > m) m = b;
+    if (c > m) m = c;
+    return m;
+}
+
+void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
+
+    const float epsilon = 0;//-1e-6f; //compensate for floating point error
+
+    if (p0.z <= 0 || p1.z <= 0 || p2.z <= 0) {
+        std::cout << "triangle behind viewport deleted\n";
+        return;
+    }
+
+    projectVertex(p0, p0);
+    projectVertex(p1, p1);
+    projectVertex(p2, p2);
+
+
+    float fullArea = triangleArea({ p0.x,p0.y }, { p1.x,p1.y }, { p2.x,p2.y });
+
+    if (fullArea <= epsilon) {
+        return;//dont draw the triangle if its backface
+    }
+
+    const float u0 = 0;
+    const float u1 = 1;
+    const float u2 = 0;
+
+    const float v0 = 0;
+    const float v1 = 0;
+    const float v2 = 1; //temp uv mapping
+
+    fullArea = 1 / fullArea;
+
+    float u0invp0z = u0 / p0.z;
+    float u1invp1z = u1 / p1.z;
+    float u2invp2z = u2 / p2.z;
+
+    float v0invp0z = v0 / p0.z;
+    float v1invp1z = v1 / p1.z;
+    float v2invp2z = v2 / p2.z;
+
+    float invp0z = 1 / p0.z;
+    float invp1z = 1 / p1.z;
+    float invp2z = 1 / p2.z; // calculate inverses once and multiply to save on division clock cycles
+
+    int minX = std::max(0, (int)min3(p0.x, p1.x, p2.x));
+    int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
+    int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
+    int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
+
+    for (int y = minY; y < maxY; y++) {
+        for (int x = minX; x < maxX; x++) {
+            float w1 = triangleArea({ p1.x,p1.y }, { p2.x,p2.y }, { (float)x,(float)y }) * fullArea;
+            if (w1 < epsilon) continue;
+
+            float w2 = triangleArea({ p2.x,p2.y }, { p0.x,p0.y }, { (float)x,(float)y }) * fullArea;
+            if (w2 < epsilon) continue;
+
+            float w3 = (1.0f - w1) - w2;
+            if (w3 < epsilon) continue;
+
+            drawPixel(w1, w2, w3, x, y, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
+        }
+    }
+}

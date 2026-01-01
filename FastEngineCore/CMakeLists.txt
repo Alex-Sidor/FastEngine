@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(FastEngineCore)
 
-add_subdirectory(RenderSurface)
+add_subdirectory(FastEngineCore)
 
 find_package(OpenGL REQUIRED)
 

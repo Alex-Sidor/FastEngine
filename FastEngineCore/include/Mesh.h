@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vector.h"
+#include "Vector.h"
 
 #include <iostream>
 #include <fstream>
@@ -12,13 +12,19 @@
 
 #include <algorithm>
 
+struct Triangle {
+	int vertexA;
+	int vertexB;
+	int vertexC;
+};
+
 class Mesh {
 public:
 
 	~Mesh();
 
 	Vec3* verticies = nullptr;
-	triangle* triangles = nullptr;
+	Triangle* triangles = nullptr;
 
 	int sizeVerts;
 	int sizeTris;
