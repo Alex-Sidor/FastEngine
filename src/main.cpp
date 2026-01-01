@@ -10,7 +10,6 @@
 #include <string>
 #include <math.h>
 
-#include "Screen.h"
 #include "vector.h"
 #include "Camera.h"
 #include "Mesh.h"
@@ -20,19 +19,20 @@ int frameCount = 1;
 
 int main(int argc, char* argv[]) {
 
-    Screen screen(1000, 1000,"Cpu renderer");
-    Camera camera(1000, 1000,120,0.5);
+    Camera camera(1000, 1000,120, "Cpu renderer");
 
-    Mesh triangle = Engine::Mesh::loadMesh("../../../assets/cube.obj");
+    Mesh triangle = Components::loadMesh("../../../assets/cube.obj");
 
-    while(!glfwWindowShouldClose(screen.window)) {
-        if (glfwGetKey(screen.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(screen.window, GLFW_TRUE);
+    while(!glfwWindowShouldClose(camera.screen.window)) {
+        if (glfwGetKey(camera.screen.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(camera.screen.window, GLFW_TRUE);
         }
         
         auto start = std::chrono::high_resolution_clock::now();
 
-        camera.renderBuffer(triangle);
+        camera.clearBuffers();
+
+        camera.renderMesh(triangle);
 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -41,8 +41,7 @@ int main(int argc, char* argv[]) {
         
         //camera.convertDepthIntoGrayscaleAndDisplayTobuffer(0,7);
 
-        screen.setTexture(camera.pixelBuffer);
-        screen.updateScreen();
+        camera.displayBuffer();
 
         if((frameCount % 10) == 0){
             std::cout << fps << "\n";

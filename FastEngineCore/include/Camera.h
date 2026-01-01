@@ -20,34 +20,22 @@
 
 class Camera {
 public:
-    int WINDOW_WIDTH,WINDOW_HEIGHT;
+    Screen screen;
 
-    pixel* pixelBuffer;
-
-    float* pixelDepthBuffer;
-
-    float angle = 0;
-    float fov;
-
-    Camera(int width, int height,float fieldOfView, float scale);
+    Camera(int width, int height,float fieldOfView, const char* windowName);
+    ~Camera();
 
     void renderMesh(Mesh& mesh);
 
     void clearBuffers();
 
+    void displayBuffer();
+
     void convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest);
 
 private:
-    int halfWidth;
-    int halfHeight;
-    int amountOfPixels;
-    int bufferOffset;
-    int bufferSize;
 
-    float viewportScaleX;
-    float viewportScaleY;
-
-    const void projectVertex(Vec3& original,Vec3& transformed);
+    TriangleRaster raster;
 
     void rotateVector(Vec2& original, Vec2& tramsformed, Vec2 pivot, float sin, float cos);
 };

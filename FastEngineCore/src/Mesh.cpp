@@ -46,7 +46,7 @@ Mesh Components::loadMesh(const char* path)
 
 			current >> a >> b >> c;
 
-			trianglesAcc.push_back((Triangle){ stoi(a) - 1, stoi(b) - 1, stoi(c) - 1 });
+			trianglesAcc.push_back(Triangle{ stoi(a) - 1, stoi(b) - 1, stoi(c) - 1 });
 		}
 	}
 	MeshFile.close();

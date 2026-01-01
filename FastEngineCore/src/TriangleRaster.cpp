@@ -1,5 +1,11 @@
 #include "TriangleRaster.h"
 
+struct pixel {//temporary
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
 TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
 {
     WINDOW_WIDTH = width;
@@ -21,10 +27,22 @@ TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
     pixelDepthBuffer = new float[amountOfPixels];
 }
 
+void TriangleRaster::clearBuffers() {
+    for (int i = 0; i < amountOfPixels; i++)
+    {
+        pixelBuffer[i] = { 0, 0, 0 };
+        pixelDepthBuffer[i] = 0;
+    }
+}
+
 TriangleRaster::~TriangleRaster()
 {
-    delete[] pixelBuffer;
-    delete[] pixelDepthBuffer;
+    if (pixelBuffer) {
+        delete[] pixelBuffer;
+    }
+    if (pixelDepthBuffer) {
+        delete[] pixelDepthBuffer;
+    }
 }
 
 void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z) {//temporary
@@ -83,9 +101,9 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
         return;
     }
 
-    projectVertex(p0, p0);
-    projectVertex(p1, p1);
-    projectVertex(p2, p2);
+    projectVertex(p0);
+    projectVertex(p1);
+    projectVertex(p2);
 
 
     float fullArea = triangleArea({ p0.x,p0.y }, { p1.x,p1.y }, { p2.x,p2.y });

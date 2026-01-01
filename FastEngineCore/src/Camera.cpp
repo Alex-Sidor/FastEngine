@@ -1,7 +1,20 @@
 #include "Camera.h"
 
-Camera::Camera(int width, int height,float fieldOfView, float scale){
+Camera::Camera(int width, int height,float fieldOfView, const char* windowName){
+    raster(width, height, feildOfView);
 
+    screen(width, height, windowName);
+}
+
+Camera::~Camera() {
+
+}
+
+void Camera::displayBuffer()
+{
+    screen.setTexture(raster.pixelBuffer);
+
+    screen.updateScreen();
 }
 
 void Camera::renderMesh(Mesh& mesh){
@@ -20,11 +33,7 @@ void Camera::renderMesh(Mesh& mesh){
 
 void Camera::clearBuffers()
 {
-    for (int i = 0; i < amountOfPixels; i++)
-    {
-        pixelBuffer[i] = { 0, 0, 0 };
-        pixelDepthBuffer[i] = 0;
-    }
+    raster.clearBuffers();
 }
 
 void Camera::convertDepthIntoGrayscaleAndDisplayTobuffer(float highest, float lowest){ 

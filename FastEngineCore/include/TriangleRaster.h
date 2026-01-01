@@ -8,25 +8,24 @@
 #include <cmath>
 #include <string>
 #include <math.h>
-#include <algorithm>
 
 #include "Vector.h"
 
-#include "Screen.h"
-
 class TriangleRaster {
 public:
+    
+    TriangleRaster(int width, int height, float fieldOfView);
+    ~TriangleRaster();
+
+    void clearBuffers();
+
     int WINDOW_WIDTH, WINDOW_HEIGHT;
 
-    pixel* pixelBuffer;
-
-    float* pixelDepthBuffer;
+    pixel* pixelBuffer = nullptr;
+    float* pixelDepthBuffer = nullptr;
 
     float angle = 0;
     float fov;
-
-    TriangleRaster();
-    ~TriangleRaster();
 
     void drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2);
 
