@@ -29,13 +29,7 @@ int main(int argc, char* argv[]) {
 
     Mat3x3 rotationMatrix(data);
 
-    Vec3 testvec = { 1,1,0 };
-
     while(!glfwWindowShouldClose(camera.getWindow())) {
-        
-        testvec = Mat::multiplyMat3x3(testvec, rotationMatrix);
-
-        printf("%f %f %f ", testvec.x, testvec.y, testvec.z);
         
         if (glfwGetKey(camera.getWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(camera.getWindow(), GLFW_TRUE);
