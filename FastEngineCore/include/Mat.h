@@ -13,5 +13,5 @@ public:
 };
 
 namespace Mat {
-    Vec3 multiplyMat3x3(const Vec3& v, const Mat3x3& M);
+    Vec3 multiplyMat3x3(const Vec3 v, const Mat3x3 M);
 }
