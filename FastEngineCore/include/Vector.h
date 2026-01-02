@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstring>
-#include "Mat.h"
 
 struct Vec3
 {

@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < triangle.sizeVerts; i++)
         {
-            triangle.verticies[i] = Vector::multiplyMat3x3(triangle.verticies[i],rotationMatrix);
+            triangle.verticies[i] = Mat::multiplyMat3x3(triangle.verticies[i],rotationMatrix);
         }
 
         camera.clearBuffers();
