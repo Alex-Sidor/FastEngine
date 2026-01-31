@@ -1,6 +1,6 @@
 # FastEngine
 
-FastEngine is a lightweight CPU-based renderer that performs rendering without external tools and uses a fork of SDL3 (make sure this code works for a while) to display the final rendered buffer.
+FastEngine is a lightweight CPU-based renderer that performs rendering without external tools.
 
 ## Clone Instructions
 
