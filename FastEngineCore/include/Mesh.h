@@ -32,6 +32,8 @@ public:
 	Vec3* verticies = nullptr;
 	Triangle* triangles = nullptr;
 
+	Vec3* verticiesCache = nullptr;
+
 	int sizeVerts;
 	int sizeTris;
 	

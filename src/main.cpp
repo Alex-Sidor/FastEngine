@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
     Transform spawn;
     spawn.eulerAngles = Vec3{ 0,0,0 };
-    spawn.position = Vec3{ 0,0,5 };
+    spawn.position = Vec3{ 0,0,3 };
     spawn.scale = Vec3{ 1,1,1 };
     spawn.updateMatrix();
 

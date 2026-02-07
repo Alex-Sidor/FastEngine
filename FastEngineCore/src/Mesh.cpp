@@ -20,6 +20,11 @@ void Mesh::clearData()
 		sizeVerts = 0;
 	}
 
+	if (verticiesCache) {
+		delete[] verticiesCache;
+		verticiesCache = nullptr;
+	}
+
 	if (triangles) {
 		delete[] triangles;
 		triangles = nullptr;
@@ -69,8 +74,10 @@ void Components::loadMesh(const char* path, Mesh& meshComponent)
 	MeshFile.close();
 
 	Vec3* verticies = new Vec3[verticiesAcc.size()];
-	Triangle* triangles = new Triangle[trianglesAcc.size()];
+	Vec3* verticiesCache = new Vec3[verticiesAcc.size()];
 
+	Triangle* triangles = new Triangle[trianglesAcc.size()];
+	
 	copy(verticiesAcc.begin(), verticiesAcc.end(), verticies);
 	copy(trianglesAcc.begin(), trianglesAcc.end(), triangles);
 
@@ -78,6 +85,8 @@ void Components::loadMesh(const char* path, Mesh& meshComponent)
 
 	meshComponent.verticies = verticies;
 	meshComponent.triangles = triangles;
+	meshComponent.verticiesCache = verticiesCache;
+
 	meshComponent.sizeVerts = verticiesAcc.size();
 	meshComponent.sizeTris = trianglesAcc.size();
 }

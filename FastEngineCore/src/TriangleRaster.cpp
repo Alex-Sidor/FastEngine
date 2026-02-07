@@ -87,16 +87,6 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
 
     const float epsilon = 0;//-1e-6f; //compensate for floating point error
 
-    if (p0.z <= 0 || p1.z <= 0 || p2.z <= 0) {
-        std::cout << "triangle behind viewport deleted\n";
-        return;
-    }
-
-    projectVertex(p0);
-    projectVertex(p1);
-    projectVertex(p2);
-
-
     float fullArea = triangleArea({ p0.x,p0.y }, { p1.x,p1.y }, { p2.x,p2.y });
 
     if (fullArea <= epsilon) {

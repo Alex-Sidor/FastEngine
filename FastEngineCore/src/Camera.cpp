@@ -38,17 +38,29 @@ void Camera::renderMesh(Mesh& mesh){
     }
 
     if (raster) {
+        
+        //transform
+        for (int i = 0; i < mesh.sizeVerts; i++) {
+            mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i], mesh.transform.rotationMatrix) + mesh.transform.position;
+        }
+
+        //project
+        for (int i = 0; i < mesh.sizeVerts; i++) {
+            raster->projectVertex(mesh.verticiesCache[i]);
+        }
+
         for (int t = 0; t < mesh.sizeTris; t++) {
             
             Triangle currentTri = mesh.triangles[t];
 
-            Vec3 a = mesh.verticies[currentTri.vertexA];
-            Vec3 b = mesh.verticies[currentTri.vertexB];
-            Vec3 c = mesh.verticies[currentTri.vertexC];
+            Vec3 a = mesh.verticiesCache[currentTri.vertexA];
+            Vec3 b = mesh.verticiesCache[currentTri.vertexB];
+            Vec3 c = mesh.verticiesCache[currentTri.vertexC];
 
-            a = Mat::multiplyMat3x3(a, mesh.transform.rotationMatrix) + mesh.transform.position;
-            b = Mat::multiplyMat3x3(b, mesh.transform.rotationMatrix) + mesh.transform.position;
-            c = Mat::multiplyMat3x3(c, mesh.transform.rotationMatrix) + mesh.transform.position;
+            if (a.z <= 0 || b.z <= 0 || c.z <= 0) {
+                std::cout << "triangle behind viewport deleted\n";
+                return;
+            }
 
             raster->drawTriangle(a,b,c);
         }

@@ -31,6 +31,8 @@ public:
 
     void drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2);
 
+    void TriangleRaster::projectVertex(Vec3& vertex);
+
 private:
 
     int halfWidth;
@@ -46,8 +48,6 @@ private:
     inline float max3(float a, float b, float c);
 
     inline float triangleArea(const Vec2& a, const Vec2& b, const Vec2& c);
-
-    void TriangleRaster::projectVertex(Vec3& vertex);
 
     void drawPixel(float w1, float w2, float w3,
         int x, int y,
