@@ -14,6 +14,7 @@
 #include "Screen.h"
 
 #include "Mesh.h"
+#include "Mat.h"
 
 #include "TriangleRaster.h"
 
@@ -26,7 +27,6 @@ public:
     void renderMesh(Mesh& mesh);
 
     void clearBuffers();
-
     void displayBuffer();
 
     GLFWwindow* getWindow();
@@ -35,6 +35,4 @@ private:
 
     Screen* screen = nullptr;
     TriangleRaster* raster = nullptr;
-
-    void rotateVector(Vec2& original, Vec2& tramsformed, Vec2 pivot, float sin, float cos);
 };

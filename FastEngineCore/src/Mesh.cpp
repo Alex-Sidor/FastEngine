@@ -1,11 +1,9 @@
 #include "Mesh.h"
 
-Mesh::Mesh()
+Mesh::Mesh(Transform inputTransform)
 {
-	verticies = nullptr;
-	triangles = nullptr;
-	sizeVerts = 0;
-	sizeTris = 0;
+	transform = inputTransform;
+	transform.updateMatrix();
 }
 
 Mesh::~Mesh()
@@ -18,15 +16,16 @@ void Mesh::clearData()
 	if (verticies) {
 		delete[] verticies;
 		verticies = nullptr;
+
+		sizeVerts = 0;
 	}
 
 	if (triangles) {
 		delete[] triangles;
 		triangles = nullptr;
-	}
 
-	sizeVerts = 0;
-	sizeTris = 0;
+		sizeTris = 0;
+	}
 }
 
 void Components::loadMesh(const char* path, Mesh& meshComponent)

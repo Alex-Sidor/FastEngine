@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Vector.h"
+#include "Mat.h"
+#include "Transform.h"
 
 #include <iostream>
 #include <fstream>
@@ -21,16 +23,19 @@ struct Triangle {
 class Mesh {
 public:
 	Mesh();
+	
+	Mesh(Transform inputTransform);
 	~Mesh();
 
 	void clearData();
 
-	Vec3* verticies;
-	Triangle* triangles;
+	Vec3* verticies = nullptr;
+	Triangle* triangles = nullptr;
 
 	int sizeVerts;
 	int sizeTris;
-
+	
+	Transform transform;
 };
 
 namespace Components {

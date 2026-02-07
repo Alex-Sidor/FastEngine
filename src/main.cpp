@@ -8,26 +8,20 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "FrameTime.h"
-
-
+#include "Transform.h"
 
 int main(int argc, char* argv[]) {
 
-    Camera camera(1000, 1000,120, "Cpu renderer");
+    Camera camera(1000, 1000, 120, "Cpu renderer");
 
-    Mesh triangle;
-    Components::loadMesh("../../../assets/cube.obj", triangle);
+    Transform spawn;
+    spawn.eulerAngles = Vec3{ 0,0,0 };
+    spawn.position = Vec3{ 0,0,5 };
+    spawn.scale = Vec3{ 1,1,1 };
+    spawn.updateMatrix();
 
-    float rotation = 0.1f;
-
-    printf("%f %f\n", sinf(rotation), cosf(rotation));
-
-    float data[3][3] = {
-        {cosf(rotation),    -sinf(rotation),    0.0f},
-        {sinf(rotation),    cosf(rotation),     0.0f},
-        {0.0f,              0.0f,               1.0f} };
-
-    Mat3x3 rotationMatrix(data);
+    Mesh triangle(spawn);
+    Components::loadMesh("../../../assets/suzanne.obj", triangle);
 
     while(!glfwWindowShouldClose(camera.getWindow())) {
         
@@ -35,14 +29,13 @@ int main(int argc, char* argv[]) {
             glfwSetWindowShouldClose(camera.getWindow(), GLFW_TRUE);
         }
 
-        for (int i = 0; i < triangle.sizeVerts; i++)
-        {
-            triangle.verticies[i] = Mat::multiplyMat3x3(triangle.verticies[i],rotationMatrix);
-        }
-
         camera.clearBuffers();
 
+        triangle.transform.eulerAngles += Vec3{ 0.01f,0.02f,0.0f};
+        triangle.transform.updateMatrix();
+
         camera.renderMesh(triangle);
+
         camera.displayBuffer();
 
         std::cout << Helpers::getFrameRate() << "\n";

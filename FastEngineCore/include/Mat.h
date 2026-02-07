@@ -4,9 +4,8 @@
 
 #include <cstring>
 
-class Mat3x3 {
-public:
-    Mat3x3(const float mat[3][3]);
+struct Mat3x3 {
+    void copyDataInto(const float mat[3][3]);
 
     float m[3][3] = {};
 

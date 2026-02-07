@@ -46,6 +46,10 @@ void Camera::renderMesh(Mesh& mesh){
             Vec3 b = mesh.verticies[currentTri.vertexB];
             Vec3 c = mesh.verticies[currentTri.vertexC];
 
+            a = Mat::multiplyMat3x3(a, mesh.transform.rotationMatrix) + mesh.transform.position;
+            b = Mat::multiplyMat3x3(b, mesh.transform.rotationMatrix) + mesh.transform.position;
+            c = Mat::multiplyMat3x3(c, mesh.transform.rotationMatrix) + mesh.transform.position;
+
             raster->drawTriangle(a,b,c);
         }
     }
@@ -55,13 +59,3 @@ void Camera::clearBuffers()
 {
     raster->clearBuffers();
 }
-
-void Camera::rotateVector(Vec2& original,Vec2& tramsformed,Vec2 pivot,float sin,float cos){
-    tramsformed.x = original.x-pivot.x;
-    tramsformed.y = original.y-pivot.y;
-
-    tramsformed.x = ((tramsformed.x *cos)-(tramsformed.y *sin))+pivot.x;
-    tramsformed.y = ((tramsformed.x *sin)+(tramsformed.y *cos))+pivot.y;
-}
-
-

@@ -22,11 +22,8 @@ TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
 }
 
 void TriangleRaster::clearBuffers() {
-    for (int i = 0; i < amountOfPixels; i++)
-    {
-        pixelBuffer[i] = { 0, 0, 0 };
-        pixelDepthBuffer[i] = 0;
-    }
+    memset(pixelBuffer, 0, sizeof(pixel) * amountOfPixels);
+    memset(pixelDepthBuffer, 0, sizeof(float) * amountOfPixels);
 }
 
 TriangleRaster::~TriangleRaster()
@@ -64,8 +61,8 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
 }
 
 void TriangleRaster::projectVertex(Vec3& vertex) {
-    vertex.x = (viewportScaleX * vertex.x / (vertex.z)) + halfWidth;
-    vertex.y = (viewportScaleY * vertex.y / (vertex.z)) + halfHeight;
+    vertex.x = (viewportScaleX * vertex.x / vertex.z) + halfWidth;
+    vertex.y = (viewportScaleY * vertex.y / vertex.z) + halfHeight;
 }
 
 float TriangleRaster::triangleArea(const Vec2& a, const Vec2& b, const Vec2& c) {

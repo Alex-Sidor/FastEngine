@@ -2,9 +2,10 @@
 
 #include <stdio.h>
 
-Mat3x3::Mat3x3(const float mat[3][3]) {
+void Mat3x3::copyDataInto(const float mat[3][3]) {
     std::memcpy(m, mat, sizeof(m));
 }
+
 
 Vec3 Mat::multiplyMat3x3(const Vec3 v, const Mat3x3 M) {
     Vec3 output = {};
