@@ -8,7 +8,9 @@ FastEngine is a lightweight CPU-based renderer that performs rendering without e
 git clone https://github.com/Alex-Sidor/FastEngine.git
 ```
 
-## Build & Run
+## Build
+
+* This project uses cmake
 
 Create a build folder and build the project using CMake:
 
