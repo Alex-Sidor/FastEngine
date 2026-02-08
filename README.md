@@ -17,11 +17,3 @@ mkdir build
 cmake -B build # -G "your generator"
 cmake --build build
 ```
-
-When running the executable, make sure to run it from the project root directory, **not from inside the build folder**, so that relative file paths work correctly.
-
-If you have followed the steps above, running the program should be as simple as:
-
-```bash
-build/FastEngine (.exe)
-```
