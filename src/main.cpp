@@ -15,10 +15,7 @@ int main(int argc, char* argv[]) {
     Camera camera(1000, 1000, 120, "Cpu renderer");
 
     Transform spawn;
-    spawn.eulerAngles = Vec3{ 0,0,0 };
     spawn.position = Vec3{ 0,0,3 };
-    spawn.scale = Vec3{ 1,1,1 };
-    spawn.updateMatrix();
 
     Mesh triangle(spawn);
     Components::loadMesh("../../../assets/suzanne.obj", triangle);
