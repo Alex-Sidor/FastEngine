@@ -41,8 +41,6 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
 
     int p = x + (y * WINDOW_WIDTH);
 
-    //pixelBuffer[p] = { 255,255,255 };
-
     if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0) {
         pixelDepthBuffer[p] = pixelZ;
 
@@ -55,8 +53,6 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
         else {
             pixelBuffer[p] = { 0,0,0 };// black
         }
-
-        pixelBuffer[p] = { static_cast<uint8_t>(U * 255),static_cast<uint8_t>(V * 255), 0 };
     }
 }
 
