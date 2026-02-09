@@ -13,6 +13,8 @@
 
 #include "Screen.h"
 
+#include "Transform.h"
+
 #include "Mesh.h"
 #include "Mat.h"
 
@@ -30,6 +32,8 @@ public:
     void displayBuffer();
 
     GLFWwindow* getWindow();
+
+    Transform transform;
 
 private:
 

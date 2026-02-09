@@ -38,10 +38,11 @@ void Camera::renderMesh(Mesh& mesh){
     }
 
     if (raster) {
-        
+
         //transform
         for (int i = 0; i < mesh.sizeVerts; i++) {
-            mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i], mesh.transform.rotationMatrix) + mesh.transform.position;
+            mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i], 
+                mesh.transform.rotationMatrix) + mesh.transform.position - transfor.position;
         }
 
         //project
