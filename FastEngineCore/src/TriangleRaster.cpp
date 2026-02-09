@@ -54,7 +54,7 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
             pixelBuffer[p] = { 177,30,94 };// black
         }*/
 
-        float offset = (x*V + U + x + y)/100;
+        float offset = (x*V + y*U)/100;
 
         Vec3 grad = Vec3{ 34,177,76 } - Vec3{ 177, 30, 94 };
         grad = Vec3{ offset * grad.x,offset * grad.y,offset * grad.z };
