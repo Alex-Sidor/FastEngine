@@ -25,3 +25,5 @@ If you have followed the steps above, running the program should be as simple as
 ```bash
 build/FastEngine (.exe)
 ```
+
+![shader Monkey](github/shaderMonkey.gif)
