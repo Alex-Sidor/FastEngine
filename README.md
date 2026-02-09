@@ -24,4 +24,4 @@ cmake --build build
 build/FastEngine (.exe)
 ```
 
-<img src="github/shaderMonkey.gif" height="200" alt="Shader Monkey" />
+<img src="github/shaderMonkey.gif" height="400" alt="Shader Monkey" />
