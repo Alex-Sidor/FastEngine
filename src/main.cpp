@@ -9,10 +9,13 @@
 #include "Mesh.h"
 #include "FrameTime.h"
 #include "Transform.h"
+#include "Player.h"
 
 int main(int argc, char* argv[]) {
 
     Camera camera(1000, 1000, 120, "Cpu renderer");
+
+    Player mainPlayer(&camera);
 
     Transform spawn;
     spawn.position = Vec3{ 0,0,3 };
