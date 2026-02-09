@@ -8,7 +8,9 @@ FastEngine is a lightweight CPU-based renderer that performs rendering without e
 git clone https://github.com/Alex-Sidor/FastEngine.git
 ```
 
-## Build & Run
+## Build
+
+* This project uses cmake
 
 Create a build folder and build the project using CMake:
 
@@ -17,10 +19,6 @@ mkdir build
 cmake -B build # -G "your generator"
 cmake --build build
 ```
-
-When running the executable, make sure to run it from the project root directory, **not from inside the build folder**, so that relative file paths work correctly.
-
-If you have followed the steps above, running the program should be as simple as:
 
 ```bash
 build/FastEngine (.exe)
