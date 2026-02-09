@@ -41,18 +41,26 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
 
     int p = x + (y * WINDOW_WIDTH);
 
-    if (pixelDepthBuffer[p] < pixelZ || pixelDepthBuffer[p] == 0) {
+    if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0) {
         pixelDepthBuffer[p] = pixelZ;
 
         float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
         float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
 
-        if (((static_cast<int>(V * 50) - static_cast<int>(U * 50)) & 1) == 0) {// uv checkerboard
+        /*if (((static_cast<int>(V * 50) - static_cast<int>(U * 50)) & 1) == 0) {// uv checkerboard
             pixelBuffer[p] = { 34,177,76 }; // white
         }
         else {
             pixelBuffer[p] = { 177,30,94 };// black
-        }
+        }*/
+
+        float offset = (x*V + U + x + y)/100;
+
+        Vec3 grad = Vec3{ 34,177,76 } - Vec3{ 177, 30, 94 };
+        grad = Vec3{ offset * grad.x,offset * grad.y,offset * grad.z };
+        grad += { 177, 30, 94 };
+
+        pixelBuffer[p] = { static_cast<uint8_t>(grad.x),static_cast<uint8_t>(grad.y),static_cast<uint8_t>(grad.z) };
     }
 }
 
