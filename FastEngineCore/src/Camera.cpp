@@ -39,10 +39,12 @@ void Camera::renderMesh(Mesh& mesh){
 
     if (raster) {
 
+        Mat3x3 mat = Mat::createMatrixFromEuler(mesh.transform.eulerAngles);
+
         //transform
         for (int i = 0; i < mesh.sizeVerts; i++) {
             mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i], 
-                mesh.transform.rotationMatrix) + mesh.transform.position - transfor.position;
+                mat) + mesh.transform.position - transform.position;
         }
 
         //project

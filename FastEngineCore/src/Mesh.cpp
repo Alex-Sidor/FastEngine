@@ -3,7 +3,6 @@
 Mesh::Mesh(Transform inputTransform)
 {
 	transform = inputTransform;
-	transform.updateMatrix();
 }
 
 Mesh::~Mesh()

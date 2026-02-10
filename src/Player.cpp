@@ -5,12 +5,12 @@ Player::Player(Camera* sceneCamera)
 	camera = sceneCamera;
 }
 
-void Player::update(Screen targetScreen)
+void Player::update(Screen* targetScreen)
 {
 	Vec3 inputVector = {
-			targetScreen.inputHandler->keyPressed(GLFW_KEY_D) - targetScreen.inputHandler->keyPressed(GLFW_KEY_A),
-			targetScreen.inputHandler->keyPressed(GLFW_KEY_E) - targetScreen.inputHandler->keyPressed(GLFW_KEY_Q),
-			targetScreen.inputHandler->keyPressed(GLFW_KEY_W) - targetScreen.inputHandler->keyPressed(GLFW_KEY_S),
+			(float)targetScreen.inputHandler->keyPressed(GLFW_KEY_D) - (float)targetScreen.inputHandler->keyPressed(GLFW_KEY_A),
+			(float)targetScreen.inputHandler->keyPressed(GLFW_KEY_E) - (float)targetScreen.inputHandler->keyPressed(GLFW_KEY_Q),
+			(float)targetScreen.inputHandler->keyPressed(GLFW_KEY_W) - (float)targetScreen.inputHandler->keyPressed(GLFW_KEY_S),
 	};
 
 	transform.position += inputVector * 0.01f;

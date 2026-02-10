@@ -35,8 +35,9 @@ public:
 
     Transform transform;
 
+    Screen* screen = nullptr;
 private:
 
-    Screen* screen = nullptr;
+
     TriangleRaster* raster = nullptr;
 };

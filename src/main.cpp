@@ -29,10 +29,11 @@ int main(int argc, char* argv[]) {
             glfwSetWindowShouldClose(camera.getWindow(), GLFW_TRUE);
         }
 
+        mainPlayer.update(camera.screen);
+
         camera.clearBuffers();
 
         triangle.transform.eulerAngles += Vec3{ 0.01f,0.02f,0.005f};
-        triangle.transform.updateMatrix();
 
         camera.renderMesh(triangle);
 
