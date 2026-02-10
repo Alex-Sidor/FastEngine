@@ -11,6 +11,8 @@
 #include "Transform.h"
 #include "Player.h"
 
+float dt = 0;
+
 int main(int argc, char* argv[]) {
 
     Camera camera(1000, 1000, 120, "Cpu renderer");
@@ -29,16 +31,19 @@ int main(int argc, char* argv[]) {
             glfwSetWindowShouldClose(camera.getWindow(), GLFW_TRUE);
         }
 
-        mainPlayer.update(camera.screen);
+        mainPlayer.update(camera.screen, dt);
 
         camera.clearBuffers();
 
-        triangle.transform.eulerAngles += Vec3{ 0.01f,0.02f,0.005f};
+        //triangle.transform.eulerAngles += Vec3{ 0.01f,0.02f,0.005f};
 
         camera.renderMesh(triangle);
 
         camera.displayBuffer();
 
-        std::cout << Helpers::getFrameRate() << "\n";
+        
+        float fps = Helpers::getFrameRate();
+        dt = 1 / fps;
+        std::cout << fps << "\n";
     }
 }

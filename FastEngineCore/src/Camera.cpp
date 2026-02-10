@@ -44,7 +44,15 @@ void Camera::renderMesh(Mesh& mesh){
         //transform
         for (int i = 0; i < mesh.sizeVerts; i++) {
             mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i], 
-                mat) + mesh.transform.position - transform.position;
+                mat) + mesh.transform.position;
+        }
+
+        //camera rotation
+        mat = Mat::createMatrixFromEuler(transform.eulerAngles);
+
+        for (int i = 0; i < mesh.sizeVerts; i++) {
+            mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i] - transform.position,
+                mat);
         }
 
         //project

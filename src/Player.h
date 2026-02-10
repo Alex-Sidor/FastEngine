@@ -6,7 +6,7 @@ class Player {
 public:
 	Player(Camera* sceneCamera);
 
-	void update(Screen* targetScreen);
+	void update(Screen* targetScreen, float dt);
 
 private:
 
