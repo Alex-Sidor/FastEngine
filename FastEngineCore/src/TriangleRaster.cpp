@@ -47,20 +47,20 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float
         float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
         float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
 
-        /*if (((static_cast<int>(V * 50) - static_cast<int>(U * 50)) & 1) == 0) {// uv checkerboard
+        if (((static_cast<int>(V * 5) - static_cast<int>(U * 5)) & 1) == 0) {// uv checkerboard
             pixelBuffer[p] = { 34,177,76 }; // white
         }
         else {
             pixelBuffer[p] = { 177,30,94 };// black
-        }*/
+        }
 
-        float offset = (x*V + y*U)/100;
+        /*float offset = (x * V + y * U) / 100;
 
         Vec3 grad = Vec3{ 34,177,76 } - Vec3{ 177, 30, 94 };
         grad = Vec3{ offset * grad.x,offset * grad.y,offset * grad.z };
         grad += { 177, 30, 94 };
 
-        pixelBuffer[p] = { static_cast<uint8_t>(grad.x),static_cast<uint8_t>(grad.y),static_cast<uint8_t>(grad.z) };
+        pixelBuffer[p] = { static_cast<uint8_t>(grad.x),static_cast<uint8_t>(grad.y),static_cast<uint8_t>(grad.z) };*/
     }
 }
 
@@ -123,6 +123,8 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
     int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
     int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
+
+
 
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {

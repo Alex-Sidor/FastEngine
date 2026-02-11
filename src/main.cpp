@@ -44,6 +44,9 @@ int main(int argc, char* argv[]) {
         
         float fps = Helpers::getFrameRate();
         dt = 1 / fps;
-        std::cout << fps << "\n";
+
+        std::string a;
+
+        //glfwSetWindowTitle(camera.getWindow(), a);
     }
 }
