@@ -69,7 +69,7 @@ void Camera::renderMesh(Mesh& mesh){
             Vec3 c = mesh.verticiesCache[currentTri.vertexC];
 
             if (a.z <= 0 || b.z <= 0 || c.z <= 0) {
-                std::cout << "triangle behind viewport deleted\n";
+                //std::cout << "triangle behind viewport deleted\n";
                 return;
             }
 

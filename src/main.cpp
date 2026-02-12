@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
     spawn.position = Vec3{ 0,0,3 };
 
     Mesh triangle(spawn);
+
     Components::loadMesh("../../../assets/suzanne.obj", triangle);
 
     while(!glfwWindowShouldClose(camera.getWindow())) {

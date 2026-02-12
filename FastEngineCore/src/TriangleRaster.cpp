@@ -124,8 +124,6 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
     int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
 
-
-
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
             float w1 = triangleArea({ p1.x,p1.y }, { p2.x,p2.y }, { (float)x,(float)y }) * fullArea;

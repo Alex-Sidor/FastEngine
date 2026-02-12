@@ -26,8 +26,9 @@ void Player::update(Screen* targetScreen, float dt)
 	float arrowInput = (float)targetScreen->inputHandler->keyPressed(GLFW_KEY_RIGHT) - (float)targetScreen->inputHandler->keyPressed(GLFW_KEY_LEFT);
 	arrowInput *= dt;
 
+	float mouseInput = (targetScreen->inputHandler->frameMouseDelta().x) * 0.001f;
 
-	transform.eulerAngles += {0, /*(targetScreen->inputHandler->frameMouseDelta().x) * 0.01f*/ +arrowInput, 0};
+	transform.eulerAngles += {0, mouseInput + arrowInput, 0};
 
 	camera->transform = transform;
 }
