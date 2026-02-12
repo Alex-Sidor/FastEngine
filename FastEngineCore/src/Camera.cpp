@@ -38,7 +38,6 @@ void Camera::renderMesh(Mesh& mesh){
     }
 
     if (raster) {
-
         Mat3x3 mat = Mat::createMatrixFromEuler(mesh.transform.eulerAngles);
 
         //transform
@@ -51,7 +50,7 @@ void Camera::renderMesh(Mesh& mesh){
         mat = Mat::createMatrixFromEuler(transform.eulerAngles);
 
         for (int i = 0; i < mesh.sizeVerts; i++) {
-            mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticies[i] - transform.position,
+            mesh.verticiesCache[i] = Mat::multiplyMat3x3(mesh.verticiesCache[i] - transform.position,
                 mat);
         }
 
