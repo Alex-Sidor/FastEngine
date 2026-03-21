@@ -144,7 +144,7 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     float w1Start = edgeFunction(p2, p0, (float)minX, (float)minY);
     float w2Start = edgeFunction(p0, p1, (float)minX, (float)minY);
 
-    int layer = minY * WINDOW_WIDTH;
+    int layer = (minY * WINDOW_WIDTH) + minX;
 
     for (int y = minY; y < maxY; y++) {
         
@@ -152,7 +152,7 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
         float w1 = w1Start;
         float w2 = w2Start;
         
-        int p = layer + minX;
+        int p = layer;
 
         for (int x = minX; x < maxX; x++) {
             if (w0 <= 0 && w1 <= 0 && w2 <= 0) {
