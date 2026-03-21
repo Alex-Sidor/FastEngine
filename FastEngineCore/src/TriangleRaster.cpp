@@ -97,13 +97,13 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
 
     const float epsilon = 0;//-1e-6f; //compensate for floating point error
 
-    float fullArea = edgeFunction(p0, p1, p2.x, p2.y);
+    float area = edgeFunction(p0, p1, p2.x, p2.y);
 
-    if (fullArea <= epsilon) {
+    if (area <= epsilon) {
         return;//dont draw the triangle if its backface
     }
 
-    fullArea = 1.0f / fullArea;
+    area = 1.0f / area; //inverse it so you can multiply by it (faster)
 
     int minX = std::max(0, (int)min3(p0.x, p1.x, p2.x));
     int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
@@ -150,12 +150,17 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     for (int y = minY; y < maxY; y++) {
         
         float w0 = w0Start;
-        float w1 = w0Start;
-        float w2 = w0Start;
+        float w1 = w1Start;
+        float w2 = w2Start;
         
         for (int x = minX; x < maxX; x++) {
             if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                drawPixel(w0, w1, w2, x, y, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
+                
+                float c0 = w0 * area;
+                float c1 = w1 * area;
+                float c2 = w2 * area;
+                
+                drawPixel(c0, c1, c2, x, y, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
             }
 
             w0 += w0dx;
