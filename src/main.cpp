@@ -15,6 +15,8 @@ float dt = 0;
 
 int main(int argc, char* argv[]) {
 
+    auto time = std::chrono::steady_clock::now();
+
     Camera camera(1000, 1000, 120, "Cpu renderer");
 
     Player mainPlayer(&camera);
@@ -44,10 +46,19 @@ int main(int argc, char* argv[]) {
 
         
         float fps = Helpers::getFrameRate();
+
         dt = 1 / fps;
 
-        std::string a;
+        auto now = std::chrono::steady_clock::now();
 
-        //glfwSetWindowTitle(camera.getWindow(), a);
+        std::chrono::duration<float> elapsed = now - time;
+
+        if (elapsed.count() >= 0.5f) {
+            int intFps = static_cast<int>(fps);
+            std::string title = "FPS: " + std::to_string(intFps);
+            glfwSetWindowTitle(camera.getWindow(), title.c_str());
+
+            time = now;
+        }
     }
 }
