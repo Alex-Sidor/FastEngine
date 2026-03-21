@@ -37,10 +37,8 @@ TriangleRaster::~TriangleRaster()
     }
 }
 
-void TriangleRaster::drawPixel(float w1, float w2, float w3, int x, int y, float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z) {//temporary
+void TriangleRaster::drawPixel(float w1, float w2, float w3, int p, float u0invp0z, float u1invp1z, float u2invp2z, float v0invp0z, float v1invp1z, float v2invp2z, float invp0z, float invp1z, float invp2z) {//temporary
     float pixelZ = 1 / ((w1 * invp0z) + (w2 * invp1z) + (w3 * invp2z));
-
-    int p = x + (y * WINDOW_WIDTH);
 
     if (pixelDepthBuffer[p] > pixelZ || pixelDepthBuffer[p] == 0) {
         pixelDepthBuffer[p] = pixelZ;
@@ -146,6 +144,7 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     float w1Start = edgeFunction(p2, p0, (float)minX, (float)minY);
     float w2Start = edgeFunction(p0, p1, (float)minX, (float)minY);
 
+    int layer = minY * WINDOW_WIDTH;
 
     for (int y = minY; y < maxY; y++) {
         
@@ -153,6 +152,8 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
         float w1 = w1Start;
         float w2 = w2Start;
         
+        int p = layer + minX;
+
         for (int x = minX; x < maxX; x++) {
             if (w0 <= 0 && w1 <= 0 && w2 <= 0) {
                 
@@ -160,16 +161,20 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
                 float c1 = w1 * area;
                 float c2 = w2 * area;
                 
-                drawPixel(c0, c1, c2, x, y, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
+                drawPixel(c0, c1, c2, p, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
             }
 
             w0 += w0dx;
             w1 += w1dx;
             w2 += w2dx;
+
+            p++;
         }
 
         w0Start += w0dy;
         w1Start += w1dy;
         w2Start += w2dy;
+
+        layer += WINDOW_WIDTH;
     }
 }

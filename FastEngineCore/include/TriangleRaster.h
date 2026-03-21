@@ -52,7 +52,7 @@ private:
     inline float edgeFunction(const Vec3& a, const Vec3& b, const float x, const float y);
 
     void drawPixel(float w1, float w2, float w3,
-        int x, int y,
+        int p,
         float u0invp0z, float u1invp1z, float u2invp2z,
         float v0invp0z, float v1invp1z, float v2invp2z,
         float invp0z, float invp1z, float invp2z);
