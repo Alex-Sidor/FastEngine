@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
         camera.clearBuffers();
 
-        //triangle.transform.eulerAngles += Vec3{ 0.01f,0.02f,0.005f};
+        triangle.transform.eulerAngles += Vec3{ 1.0f,2.0f,0.5f} * dt;
 
         camera.renderMesh(triangle);
 

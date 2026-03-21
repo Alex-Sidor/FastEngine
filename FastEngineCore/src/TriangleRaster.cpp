@@ -46,20 +46,42 @@ void TriangleRaster::drawPixel(float w1, float w2, float w3, int p, float u0invp
         float U = ((w1 * u0invp0z) + (w2 * u1invp1z) + (w3 * u2invp2z)) * pixelZ;
         float V = ((w1 * v0invp0z) + (w2 * v1invp1z) + (w3 * v2invp2z)) * pixelZ;
 
-        if (((static_cast<int>(V * 5) - static_cast<int>(U * 5)) & 1) == 0) {// uv checkerboard
-            pixelBuffer[p] = { 34,177,76 }; // white
+        /*if (((static_cast<int>(V * 5) - static_cast<int>(U * 5)) & 1) == 0) {// uv checkerboard
+            pixelBuffer[p] = { 34,177,76 };
         }
         else {
-            pixelBuffer[p] = { 177,30,94 };// black
+            pixelBuffer[p] = { 177,30,94 };
+        }*/
+
+
+        float gridSize = 1.0f;
+        float lineThickness = 0.05f;
+        float gridX = sin(U * gridSize * 3.14159f);
+        float gridY = sin(V * gridSize * 3.14159f);
+
+        bool isGridLine = (abs(gridX) > (1.0f - lineThickness)) ||
+            (abs(gridY) > (1.0f - lineThickness));
+
+        float distToCenter = sqrtf((U - 0.5f) * (U - 0.5f) + (V - 0.5f) * (V - 0.5f));
+        float wave = sin(distToCenter * 20.0f);
+
+        Vec3 baseColor = { 20, 50, 100 };
+        Vec3 glowColor = { 0, 255, 200 };
+
+        Vec3 finalColor;
+        if (isGridLine) {
+            finalColor = glowColor;
+        }
+        else {
+            float intensity = 0.2f + (wave * 0.1f);
+            finalColor = { baseColor.x * intensity, baseColor.y * intensity, baseColor.z * intensity };
         }
 
-        /*float offset = (x * V + y * U) / 100;
-
-        Vec3 grad = Vec3{ 34,177,76 } - Vec3{ 177, 30, 94 };
-        grad = Vec3{ offset * grad.x,offset * grad.y,offset * grad.z };
-        grad += { 177, 30, 94 };
-
-        pixelBuffer[p] = { static_cast<uint8_t>(grad.x),static_cast<uint8_t>(grad.y),static_cast<uint8_t>(grad.z) };*/
+        pixelBuffer[p] = {
+            static_cast<uint8_t>(finalColor.x),
+            static_cast<uint8_t>(finalColor.y),
+            static_cast<uint8_t>(finalColor.z)
+        };
     }
 }
 
