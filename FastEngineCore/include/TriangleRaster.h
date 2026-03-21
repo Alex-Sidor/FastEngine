@@ -49,6 +49,8 @@ private:
 
     inline float triangleArea(const Vec2& a, const Vec2& b, const Vec2& c);
 
+    inline float edgeFunction(const Vec3& a, const Vec3& b, const float x, const float y);
+
     void drawPixel(float w1, float w2, float w3,
         int x, int y,
         float u0invp0z, float u1invp1z, float u2invp2z,

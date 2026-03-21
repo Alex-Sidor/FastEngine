@@ -1,4 +1,5 @@
 #include "TriangleRaster.h"
+#include "TriangleRaster.h"
 
 TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
 {
@@ -73,6 +74,11 @@ float TriangleRaster::triangleArea(const Vec2& a, const Vec2& b, const Vec2& c) 
     return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
 }
 
+inline float TriangleRaster::edgeFunction(const Vec3& a, const Vec3& b, const float x, const float y)
+{
+    return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
+}
+
 float TriangleRaster::min3(float a, float b, float c) {
     float m = a;
     if (b < m) m = b;
@@ -91,11 +97,19 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
 
     const float epsilon = 0;//-1e-6f; //compensate for floating point error
 
-    float fullArea = triangleArea({ p0.x,p0.y }, { p1.x,p1.y }, { p2.x,p2.y });
+    float fullArea = edgeFunction(p0, p1, p2.x, p2.y);
 
     if (fullArea <= epsilon) {
         return;//dont draw the triangle if its backface
     }
+
+    fullArea = 1.0f / fullArea;
+
+    int minX = std::max(0, (int)min3(p0.x, p1.x, p2.x));
+    int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
+    int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
+    int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
+
 
     const float u0 = 0;
     const float u1 = 1;
@@ -104,8 +118,6 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     const float v0 = 0;
     const float v1 = 0;
     const float v2 = 1; //temp uv mapping
-
-    fullArea = 1 / fullArea;
 
     float u0invp0z = u0 / p0.z;
     float u1invp1z = u1 / p1.z;
@@ -119,23 +131,40 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
     float invp1z = 1 / p1.z;
     float invp2z = 1 / p2.z; // calculate inverses once and multiply to save on division clock cycles
 
-    int minX = std::max(0, (int)min3(p0.x, p1.x, p2.x));
-    int minY = std::max(0, (int)min3(p0.y, p1.y, p2.y));
-    int maxX = std::min(WINDOW_WIDTH, (int)max3(p0.x, p1.x, p2.x) + 1);
-    int maxY = std::min(WINDOW_HEIGHT, (int)max3(p0.y, p1.y, p2.y) + 1);
+
+    //calculate weight deltas
+    float w0dx = p2.y - p1.y;
+    float w1dx = p0.y - p2.y;
+    float w2dx = p1.y - p0.y;
+
+    float w0dy = p1.x - p2.x;
+    float w1dy = p2.x - p0.x;
+    float w2dy = p0.x - p1.x;
+
+    //find starting weights
+    float w0Start = edgeFunction(p1, p2, (float)minX, (float)minY);
+    float w1Start = edgeFunction(p2, p0, (float)minX, (float)minY);
+    float w2Start = edgeFunction(p0, p1, (float)minX, (float)minY);
+
 
     for (int y = minY; y < maxY; y++) {
+        
+        float w0 = w0Start;
+        float w1 = w0Start;
+        float w2 = w0Start;
+        
         for (int x = minX; x < maxX; x++) {
-            float w1 = triangleArea({ p1.x,p1.y }, { p2.x,p2.y }, { (float)x,(float)y }) * fullArea;
-            if (w1 < epsilon) continue;
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                drawPixel(w0, w1, w2, x, y, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
+            }
 
-            float w2 = triangleArea({ p2.x,p2.y }, { p0.x,p0.y }, { (float)x,(float)y }) * fullArea;
-            if (w2 < epsilon) continue;
-
-            float w3 = (1.0f - w1) - w2;
-            if (w3 < epsilon) continue;
-
-            drawPixel(w1, w2, w3, x, y, u0invp0z, u1invp1z, u2invp2z, v0invp0z, v1invp1z, v2invp2z, invp0z, invp1z, invp2z);
+            w0 += w0dx;
+            w1 += w1dx;
+            w2 += w2dx;
         }
+
+        w0Start += w0dy;
+        w1Start += w1dy;
+        w2Start += w2dy;
     }
 }
