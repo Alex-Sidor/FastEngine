@@ -99,7 +99,7 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
 
     float area = edgeFunction(p0, p1, p2.x, p2.y);
 
-    if (area <= epsilon) {
+    if (area >= epsilon) {
         return;//dont draw the triangle if its backface
     }
 
@@ -154,7 +154,7 @@ void TriangleRaster::drawTriangle(Vec3 p0, Vec3 p1, Vec3 p2) {
         float w2 = w2Start;
         
         for (int x = minX; x < maxX; x++) {
-            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+            if (w0 <= 0 && w1 <= 0 && w2 <= 0) {
                 
                 float c0 = w0 * area;
                 float c1 = w1 * area;
