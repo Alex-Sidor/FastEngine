@@ -1,5 +1,4 @@
 #include "TriangleRaster.h"
-#include "TriangleRaster.h"
 
 TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
 {
