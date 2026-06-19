@@ -34,8 +34,8 @@ public:
 
 	Vec3* verticiesCache = nullptr;
 
-	int sizeVerts;
-	int sizeTris;
+	size_t sizeVerts;
+	size_t sizeTris;
 	
 	Transform transform;
 };
