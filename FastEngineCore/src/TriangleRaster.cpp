@@ -14,8 +14,7 @@ TriangleRaster::TriangleRaster(int width, int height, float fieldOfView)
     viewportScaleY = -(halfHeight) / fov;//flipped y axis (buffers are stored from top left pixels)
 
     amountOfPixels = width * height;
-    bufferOffset = height;
-    bufferSize = bufferOffset * 2;
+    bufferSize = height * 2;
 
     pixelBuffer = new pixel[amountOfPixels];
     pixelDepthBuffer = new float[amountOfPixels];

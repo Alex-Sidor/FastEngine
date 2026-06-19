@@ -38,7 +38,6 @@ private:
     int halfWidth;
     int halfHeight;
     int amountOfPixels;
-    int bufferOffset;
     int bufferSize;
 
     float viewportScaleX;
